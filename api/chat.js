@@ -131,6 +131,7 @@ export default async function handler(req, res) {
         let usingCloudFallback = false;
         
         // Connect directly to YOUR local Ollama models
+        // Optimized for faster responses
         const inferenceParams = {
             model: modelConfig.ollama,
             prompt: prompt,
@@ -139,7 +140,9 @@ export default async function handler(req, res) {
                 temperature: temperature,
                 num_predict: max_tokens,
                 top_p: top_p,
-                stop: ['Human:', 'User:', '\n\nHuman:', '\n\nUser:']
+                stop: ['Human:', 'User:', '\n\nHuman:', '\n\nUser:'],
+                num_ctx: 2048,  // Smaller context for faster responses
+                num_thread: 4    // Use 4 threads for optimal performance
             }
         };
         

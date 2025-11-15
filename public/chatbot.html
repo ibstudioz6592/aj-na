@@ -489,18 +489,22 @@
             
             try {
                 const selectedModel = modelSelector.value;
-                const response = await fetch('/api/chat', {
+                // Use the correct API endpoint - will work locally and via Cloudflare tunnel
+                const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'http://localhost:3001/api/chat'
+                    : 'https://local-api.ajstudioz.dev/api/chat';
+                
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-API-Key': 'aj-demo123456789abcdef',
-                        'ngrok-skip-browser-warning': '69420',
-                        'User-Agent': 'AI-API-Platform/1.0'
+                        'X-API-Key': 'aj-demo123456789abcdef'
                     },
                     body: JSON.stringify({ 
                         model: selectedModel,
                         messages: [{ role: 'user', content: message }],
-                        stream: false
+                        stream: false,
+                        max_tokens: 500  // Limit tokens for faster responses
                     })
                 });
                 
