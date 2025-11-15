@@ -1,0 +1,11 @@
+tunnel: d4f8cf97-47e8-4d4c-9bbd-d903fc5d08a7
+credentials-file: C:\Users\LENOVO\.cloudflared\d4f8cf97-47e8-4d4c-9bbd-d903fc5d08a7.json
+
+ingress:
+  - hostname: local-api.ajstudioz.dev
+    service: http://localhost:3001
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      keepAliveConnections: 10
+  - service: http_status:404

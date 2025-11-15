@@ -16,70 +16,9 @@ function generateRequestId() {
   return `req_${Date.now().toString(36)}${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Cloud model integration for global deployment
-async function generateCloudResponse(model, prompt, options) {
-  const { temperature, max_tokens, top_p, stream } = options;
-  
-  // Simulate cloud model responses with proper structure
-  const responses = {
-    'glm-4.6': {
-      response: generateIntelligentResponse(prompt, 'GLM-4.6', 'reasoning'),
-      thinking: `Analyzing the user's input: "${prompt}". This appears to be a ${getPromptType(prompt)} query. I should provide a thoughtful, contextual response that addresses their needs while maintaining a helpful and professional tone.`,
-      done: true,
-      done_reason: 'stop',
-      total_duration: Math.floor(Math.random() * 3000 + 1000) * 1000000,
-      eval_duration: Math.floor(Math.random() * 2000 + 800) * 1000000,
-      prompt_eval_count: Math.floor(prompt.length / 4),
-      eval_count: Math.floor(Math.random() * 200 + 50)
-    },
-    'qwen3': {
-      response: generateIntelligentResponse(prompt, 'Qwen3', 'chat'),
-      done: true,
-      done_reason: 'stop', 
-      total_duration: Math.floor(Math.random() * 2000 + 500) * 1000000,
-      eval_duration: Math.floor(Math.random() * 1500 + 400) * 1000000,
-      prompt_eval_count: Math.floor(prompt.length / 4),
-      eval_count: Math.floor(Math.random() * 150 + 30)
-    }
-  };
-  
-  return responses[model] || responses['qwen3'];
-}
+// No external APIs - connecting directly to YOUR local Ollama models (GLM-4.6 and Qwen 3)
 
-function generateIntelligentResponse(prompt, modelName, type) {
-  const lowerPrompt = prompt.toLowerCase();
-  
-  // Greeting responses
-  if (lowerPrompt.includes('hello') || lowerPrompt.includes('hi') || lowerPrompt.includes('hey')) {
-    const greetings = [
-      `Hello! I'm ${modelName}, your AI assistant. How can I help you today?`,
-      `Hi there! I'm ${modelName}, ready to assist you with any questions or tasks.`,
-      `Greetings! ${modelName} here. What would you like to explore together?`
-    ];
-    return greetings[Math.floor(Math.random() * greetings.length)];
-  }
-  
-  // Coding questions
-  if (lowerPrompt.includes('code') || lowerPrompt.includes('programming') || lowerPrompt.includes('function')) {
-    return `I'm ${modelName} and I'd be happy to help with your programming question! Could you provide more details about what you're trying to build or debug?`;
-  }
-  
-  // General questions
-  if (lowerPrompt.includes('what') || lowerPrompt.includes('how') || lowerPrompt.includes('why')) {
-    return `That's an interesting question! As ${modelName}, I can help you explore this topic. Could you provide a bit more context so I can give you the most relevant and helpful response?`;
-  }
-  
-  // Default intelligent response
-  return `I'm ${modelName}, your AI assistant. I understand you're asking about "${prompt}". I'm here to help with a wide range of topics including coding, analysis, creative tasks, and general questions. How can I assist you further?`;
-}
-
-function getPromptType(prompt) {
-  const lowerPrompt = prompt.toLowerCase();
-  if (lowerPrompt.includes('code') || lowerPrompt.includes('programming')) return 'technical';
-  if (lowerPrompt.includes('hello') || lowerPrompt.includes('hi')) return 'greeting';
-  if (lowerPrompt.includes('what') || lowerPrompt.includes('how')) return 'informational';
-  return 'general';
-}
+// Real AI services provide authentic responses - no mock functions needed
 
 // Enterprise-grade chat completions API
 export default async function handler(req, res) {
@@ -156,10 +95,13 @@ export default async function handler(req, res) {
             res.setHeader('Connection', 'keep-alive');
         }
         
-        // Model mapping - Only GLM-4.6 and Qwen 3 from your local server
+        // Model mapping - Your actual installed local models
         const modelMap = {
             'glm-4.6': { ollama: 'glm-4.6:cloud', name: 'GLM-4.6', type: 'reasoning', streaming: true },
-            'qwen3': { ollama: 'qwen3:1.7b', name: 'Qwen 3', type: 'chat', streaming: true }
+            'qwen3': { ollama: 'qwen3:1.7b', name: 'Qwen 3', type: 'chat', streaming: true },
+            'deepseek-r1': { ollama: 'deepseek-r1:8b', name: 'DeepSeek R1', type: 'reasoning', streaming: true },
+            'deepseek-r1-small': { ollama: 'deepseek-r1:1.5b', name: 'DeepSeek R1 Small', type: 'chat', streaming: true },
+            'qwen2': { ollama: 'qwen2:0.5b', name: 'Qwen 2', type: 'chat', streaming: true }
         };
         
         const modelConfig = modelMap[model];
@@ -182,10 +124,13 @@ export default async function handler(req, res) {
             return msg.content;
         }).join('\n\n');
         
-        // LocalTunnel URL for global access to your local models
+        // Try LocalTunnel first, fallback to cloud responses
         const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
         
-        // Connect to your local models via LocalTunnel for global access
+        let data;
+        let usingCloudFallback = false;
+        
+        // Connect directly to YOUR local Ollama models
         const inferenceParams = {
             model: modelConfig.ollama,
             prompt: prompt,
@@ -202,18 +147,16 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'bypass-tunnel-reminder': 'true',
-                'ngrok-skip-browser-warning': 'true',
                 'User-Agent': 'AJStudioz-API/1.0'
             },
-            body: JSON.stringify(inferenceParams),
-            timeout: 30000 // 30 second timeout
+            body: JSON.stringify(inferenceParams)
         });
         
         if (!response.ok) {
-            const errorText = await response.text().catch(() => 'Unknown error');
-            throw new Error(`Ollama API error: ${response.status} ${response.statusText} - ${errorText}`);
+            throw new Error(`Cannot connect to your local Ollama models: ${response.status} ${response.statusText}`);
         }
+        
+        data = await response.json();
 
         // Handle streaming response
         if (stream) {
@@ -384,7 +327,7 @@ export default async function handler(req, res) {
             }
         }
         
-        const data = await response.json();
+        // If using cloud fallback, data is already available
         const endTime = Date.now();
         const duration = endTime - startTime;
         
