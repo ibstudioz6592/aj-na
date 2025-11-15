@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI API Platform - Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #334155;
+            background: #f8fafc;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .nav {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .nav a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        
+        .nav a:hover {
+            background: #f1f5f9;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section h2 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .section h3 {
+            color: #475569;
+            margin: 1.5rem 0 1rem 0;
+        }
+        
+        .code-block {
+            background: #1a1a1a;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+            margin: 1rem 0;
+        }
+        
+        .endpoint {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .method {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .method.get { background: #dcfce7; color: #166534; }
+        .method.post { background: #dbeafe; color: #1d4ed8; }
+        .method.put { background: #fef3c7; color: #92400e; }
+        .method.delete { background: #fecaca; color: #991b1b; }
+        
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .param-table th,
+        .param-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .param-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .badge.required { background: #fecaca; color: #991b1b; }
+        .badge.optional { background: #e0e7ff; color: #3730a3; }
+        
+        .response-example {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .quick-start {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 AJStudioz AI Platform</h1>
+        <p>Your Own AI Infrastructure - Enterprise-grade AI API with OpenAI Compatibility</p>
+    </div>
+    
+    <div class="container">
+        <nav class="nav">
+            <ul>
+                <li><a href="#quick-start">Quick Start</a></li>
+                <li><a href="#authentication">Authentication</a></li>
+                <li><a href="#chat-completions">Chat Completions</a></li>
+                <li><a href="#models">Models</a></li>
+                <li><a href="#monitoring">Monitoring</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#sdks">SDKs</a></li>
+            </ul>
+        </nav>
+
+        <div id="quick-start" class="section">
+            <h2>🚀 Quick Start</h2>
+            <div class="quick-start">
+                <h3>Get your API key and start building in 30 seconds</h3>
+                <p>Our API is fully compatible with OpenAI's format, making migration seamless.</p>
+            </div>
+            
+            <h3>1. Get Your API Key</h3>
+            <div class="code-block">
+curl -X POST "${window.location.origin}/api/auth?action=register" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "email": "your@email.com",
+    "password": "your_secure_password",
+    "name": "Your Name",
+    "plan": "free"
+  }'</div>
+
+            <h3>2. Make Your First Request</h3>
+            <div class="code-block">
+curl -X POST "${window.location.origin}/api/chat" \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: your-api-key" \\
+  -d '{
+    "model": "glm-4.6",
+    "messages": [
+      {"role": "user", "content": "Hello, AI!"}
+    ],
+    "max_tokens": 150
+  }'</div>
+
+            <h3>3. Use with OpenAI SDK</h3>
+            <div class="code-block">
+# Python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="your-api-key",
+    base_url="${window.location.origin}/api"
+)
+
+response = client.chat.completions.create(
+    model="glm-4.6",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+print(response.choices[0].message.content)</div>
+        </div>
+
+        <div id="authentication" class="section">
+            <h2>🔐 Authentication</h2>
+            <p>All API requests require authentication using an API key. Include your API key in the request headers:</p>
+            
+            <div class="code-block">
+X-API-Key: your-api-key-here</div>
+            
+            <h3>Creating an Account</h3>
+            <div class="endpoint">
+                <span class="method post">POST</span> <code>/api/auth?action=register</code>
+            </div>
+            
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>email</code></td>
+                        <td>string</td>
+                        <td><span class="badge required">Required</span></td>
+                        <td>Your email address</td>
+                    </tr>
+                    <tr>
+                        <td><code>password</code></td>
+                        <td>string</td>
+                        <td><span class="badge required">Required</span></td>
+                        <td>Password (min 8 characters)</td>
+                    </tr>
+                    <tr>
+                        <td><code>name</code></td>
+                        <td>string</td>
+                        <td><span class="badge required">Required</span></td>
+                        <td>Your full name</td>
+                    </tr>
+                    <tr>
+                        <td><code>plan</code></td>
+                        <td>string</td>
+                        <td><span class="badge optional">Optional</span></td>
+                        <td>Plan type: free, pro, enterprise (default: free)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="response-example">
+                <strong>Response:</strong>
+                <div class="code-block">
+{
+  "user": {
+    "id": "user_123",
+    "email": "your@email.com",
+    "plan": "free",
+    "usage": {
+      "requests_this_month": 0,
+      "tokens_this_month": 0
+    },
+    "limits": {
+      "requests_per_minute": 20,
+      "requests_per_month": 1000,
+      "tokens_per_month": 50000
+    }
+  },
+  "api_key": "ak-1234567890abcdef",
+  "message": "Account created successfully"
+}</div>
+            </div>
+        </div>
+
+        <div id="chat-completions" class="section">
+            <h2>💬 Chat Completions</h2>
+            <p>Create a chat completion with our advanced AI models. Fully compatible with OpenAI's chat completions API.</p>
+            
+            <div class="endpoint">
+                <span class="method post">POST</span> <code>/api/chat</code>
+            </div>
+
+            <h3>Request Parameters</h3>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>model</code></td>
+                        <td>string</td>
+                        <td><span class="badge required">Required</span></td>
+                        <td>Model ID: "glm-4.6" or "deepseek-r1"</td>
+                    </tr>
+                    <tr>
+                        <td><code>messages</code></td>
+                        <td>array</td>
+                        <td><span class="badge required">Required</span></td>
+                        <td>Array of message objects</td>
+                    </tr>
+                    <tr>
+                        <td><code>max_tokens</code></td>
+                        <td>integer</td>
+                        <td><span class="badge optional">Optional</span></td>
+                        <td>Maximum tokens to generate (default: 2000)</td>
+                    </tr>
+                    <tr>
+                        <td><code>temperature</code></td>
+                        <td>number</td>
+                        <td><span class="badge optional">Optional</span></td>
+                        <td>Sampling temperature 0-2 (default: 0.7)</td>
+                    </tr>
+                    <tr>
+                        <td><code>top_p</code></td>
+                        <td>number</td>
+                        <td><span class="badge optional">Optional</span></td>
+                        <td>Nucleus sampling parameter (default: 0.9)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Example Request</h3>
+            <div class="code-block">
+{
+  "model": "glm-4.6",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a helpful AI assistant."
+    },
+    {
+      "role": "user", 
+      "content": "Explain quantum computing in simple terms."
+    }
+  ],
+  "max_tokens": 500,
+  "temperature": 0.7
+}</div>
+
+            <h3>Response Format</h3>
+            <div class="response-example">
+                <div class="code-block">
+{
+  "id": "chatcmpl-123",
+  "object": "chat.completion",
+  "created": 1699564800,
+  "model": "glm-4.6",
+  "choices": [{
+    "index": 0,
+    "message": {
+      "role": "assistant",
+      "content": "Quantum computing uses quantum mechanics..."
+    },
+    "finish_reason": "stop"
+  }],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 150,
+    "total_tokens": 170
+  },
+  "metadata": {
+    "request_id": "req_123",
+    "response_time_ms": 1200
+  }
+}</div>
+            </div>
+        </div>
+
+        <div id="models" class="section">
+            <h2>🤖 Available Models</h2>
+            
+            <div class="endpoint">
+                <span class="method get">GET</span> <code>/api/models</code>
+            </div>
+
+            <h3>GLM-4.6</h3>
+            <ul>
+                <li><strong>Model ID:</strong> <code>glm-4.6</code></li>
+                <li><strong>Max Tokens:</strong> 8,192</li>
+                <li><strong>Strengths:</strong> General conversation, coding, creative writing</li>
+                <li><strong>Pricing:</strong> $0.001/1K input tokens, $0.002/1K output tokens</li>
+            </ul>
+
+            <h3>DeepSeek-R1</h3>
+            <ul>
+                <li><strong>Model ID:</strong> <code>deepseek-r1</code></li>
+                <li><strong>Max Tokens:</strong> 4,096</li>
+                <li><strong>Strengths:</strong> Reasoning, mathematics, step-by-step problem solving</li>
+                <li><strong>Pricing:</strong> $0.0005/1K input tokens, $0.0015/1K output tokens, $0.001/1K reasoning tokens</li>
+            </ul>
+        </div>
+
+        <div id="monitoring" class="section">
+            <h2>📊 Monitoring & Analytics</h2>
+            
+            <h3>Usage Statistics</h3>
+            <div class="endpoint">
+                <span class="method get">GET</span> <code>/api/dashboard?endpoint=usage</code>
+            </div>
+
+            <h3>Health Check</h3>
+            <div class="endpoint">
+                <span class="method get">GET</span> <code>/api/dashboard?endpoint=health</code>
+            </div>
+
+            <h3>Billing Information</h3>
+            <div class="endpoint">
+                <span class="method get">GET</span> <code>/api/dashboard?endpoint=billing</code>
+            </div>
+        </div>
+
+        <div id="pricing" class="section">
+            <h2>💰 Pricing</h2>
+            
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Plan</th>
+                        <th>Requests/Month</th>
+                        <th>Tokens/Month</th>
+                        <th>Rate Limit</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Free</strong></td>
+                        <td>1,000</td>
+                        <td>50,000</td>
+                        <td>20/min</td>
+                        <td>$0</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pro</strong></td>
+                        <td>10,000</td>
+                        <td>500,000</td>
+                        <td>100/min</td>
+                        <td>$29/month</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Enterprise</strong></td>
+                        <td>100,000</td>
+                        <td>5,000,000</td>
+                        <td>500/min</td>
+                        <td>Custom</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="sdks" class="section">
+            <h2>📦 SDKs & Libraries</h2>
+            
+            <h3>Official SDKs</h3>
+            <p>Use any OpenAI-compatible SDK by changing the base URL:</p>
+
+            <div class="code-block">
+# Python
+pip install openai
+export OPENAI_API_KEY="your-api-key"
+export OPENAI_BASE_URL="${window.location.origin}/api"
+
+# Node.js
+npm install openai
+const openai = new OpenAI({
+  apiKey: "your-api-key",
+  baseURL: "${window.location.origin}/api"
+});
+
+# cURL
+curl -X POST "${window.location.origin}/api/chat" \\
+  -H "X-API-Key: your-api-key" \\
+  -H "Content-Type: application/json" \\
+  -d '{"model": "glm-4.6", "messages": [...]}'</div>
+        </div>
+    </div>
+
+    <script>
+        // Update URLs with current domain
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentOrigin = window.location.origin;
+            document.body.innerHTML = document.body.innerHTML.replace(/\${window\.location\.origin}/g, currentOrigin);
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

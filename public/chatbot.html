@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - Multi-Model Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .model-selector {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        .model-selector option {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .message.bot .message-content {
+            background: white;
+            border: 1px solid #e0e0e0;
+            color: #333;
+        }
+        
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .user-avatar {
+            background: #667eea;
+        }
+        
+        .bot-avatar {
+            background: #764ba2;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .chat-input {
+            flex: 1;
+            min-height: 44px;
+            max-height: 120px;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 22px;
+            resize: none;
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+        
+        .send-button {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+        
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px;
+            max-width: 70px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #bbb;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+        
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 70%;
+        }
+        
+        .reasoning-message {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            font-size: 13px;
+            font-style: italic;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        
+        .reasoning-message::before {
+            content: "🤔 Reasoning:";
+            font-weight: 600;
+            font-style: normal;
+            display: block;
+            margin-bottom: 8px;
+            color: #6c757d;
+        }
+        
+        .reasoning-toggle {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        
+        .reasoning-toggle:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .reasoning-content {
+            display: none;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .reasoning-content.expanded {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <a href="/" class="back-button">← Back</a>
+            <h1 id="chatTitle">AI Assistant</h1>
+            <p>Powered by your local AI models via Ollama</p>
+            <select id="modelSelector" class="model-selector">
+                <option value="glm-4.6">GLM-4.6 (Local) 🧠</option>
+                <option value="qwen3">Qwen 3 (Local) ⚡</option>
+            </select>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar bot-avatar">🤖</div>
+                <div class="message-content" id="welcomeMessage">
+                    Hello! I'm your AI assistant powered by GLM-4.6. I'm running locally through Ollama and can help you with coding, questions, and conversations. You can switch between different models using the selector above. What would you like to talk about?
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <textarea 
+                    id="chatInput" 
+                    class="chat-input" 
+                    placeholder="Type your message here..."
+                    rows="1"
+                ></textarea>
+                <button id="sendButton" class="send-button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const modelSelector = document.getElementById('modelSelector');
+        const chatTitle = document.getElementById('chatTitle');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        
+        // Model configurations
+        const modelConfig = {
+            'glm-4.6': {
+                name: 'GLM-4.6',
+                welcome: "Hello! I'm GLM-4.6, your local AI assistant. I'm running on your machine through Ollama and can help with reasoning, coding, analysis, and conversations. What would you like to explore?"
+            },
+            'qwen3': {
+                name: 'Qwen 3',
+                welcome: "Hello! I'm Qwen 3, running locally on your system. I'm fast, efficient, and great at chat, reasoning, and problem-solving. How can I help you today?"
+            }
+        };
+        
+        // Update UI when model changes
+        modelSelector.addEventListener('change', function() {
+            const selectedModel = this.value;
+            const config = modelConfig[selectedModel];
+            chatTitle.textContent = config.name + ' AI Assistant';
+            welcomeMessage.textContent = config.welcome;
+        });
+        
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        // Send message on Enter (Shift+Enter for new line)
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        sendButton.addEventListener('click', sendMessage);
+        
+        function addMessage(content, isUser = false, isError = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            if (!isUser) {
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar bot-avatar';
+                avatar.textContent = '🤖';
+                messageDiv.appendChild(avatar);
+            }
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = isError ? 'error-message' : 'message-content';
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(contentDiv);
+            
+            if (isUser) {
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar user-avatar';
+                avatar.textContent = '👤';
+                messageDiv.appendChild(avatar);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function addReasoningMessage(reasoningText) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar bot-avatar';
+            avatar.textContent = '🤖';
+            messageDiv.appendChild(avatar);
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'reasoning-message';
+            
+            // Create collapsible reasoning content
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'reasoning-toggle';
+            toggleBtn.textContent = 'Show reasoning';
+            
+            const reasoningContent = document.createElement('div');
+            reasoningContent.className = 'reasoning-content';
+            reasoningContent.textContent = reasoningText;
+            
+            toggleBtn.addEventListener('click', function() {
+                const isExpanded = reasoningContent.classList.contains('expanded');
+                if (isExpanded) {
+                    reasoningContent.classList.remove('expanded');
+                    toggleBtn.textContent = 'Show reasoning';
+                } else {
+                    reasoningContent.classList.add('expanded');
+                    toggleBtn.textContent = 'Hide reasoning';
+                }
+            });
+            
+            contentDiv.appendChild(toggleBtn);
+            contentDiv.appendChild(reasoningContent);
+            messageDiv.appendChild(contentDiv);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar bot-avatar';
+            avatar.textContent = '🤖';
+            typingDiv.appendChild(avatar);
+            
+            const indicator = document.createElement('div');
+            indicator.className = 'typing-indicator';
+            indicator.style.display = 'flex';
+            indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            
+            typingDiv.appendChild(indicator);
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, true);
+            
+            // Clear input
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            
+            // Disable send button
+            sendButton.disabled = true;
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                const selectedModel = modelSelector.value;
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'aj-demo123456789abcdef',
+                        'ngrok-skip-browser-warning': '69420',
+                        'User-Agent': 'AI-API-Platform/1.0'
+                    },
+                    body: JSON.stringify({ 
+                        model: selectedModel,
+                        messages: [{ role: 'user', content: message }],
+                        stream: false
+                    })
+                });
+                
+                const data = await response.json();
+                
+                hideTypingIndicator();
+                
+                // Handle the new structured response format
+                if (data.output && data.output.length > 0) {
+                    // Find reasoning and message outputs
+                    const reasoningOutput = data.output.find(item => item.type === 'reasoning');
+                    const messageOutput = data.output.find(item => item.type === 'message');
+                    
+                    // Show reasoning if available
+                    if (reasoningOutput && reasoningOutput.content && reasoningOutput.content[0]) {
+                        addReasoningMessage(reasoningOutput.content[0].text);
+                    }
+                    
+                    // Show main response
+                    if (messageOutput && messageOutput.content && messageOutput.content[0]) {
+                        const responseText = messageOutput.content[0].text || 'No response content';
+                        addMessage(responseText);
+                    } else {
+                        addMessage('Sorry, I received an unexpected response format. Please try again.', false, true);
+                    }
+                } else if (data.choices && data.choices[0] && data.choices[0].message) {
+                    // Fallback for OpenAI-style responses
+                    const message = data.choices[0].message;
+                    const responseText = message.content || 'No response content';
+                    
+                    if (message.reasoning && message.reasoning.content) {
+                        addReasoningMessage(message.reasoning.content);
+                    }
+                    
+                    addMessage(responseText);
+                } else if (data.error) {
+                    addMessage(data.error.message || 'Sorry, I encountered an error. Please try again.', false, true);
+                } else {
+                    addMessage('Sorry, I received an unexpected response format. Please try again.', false, true);
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Sorry, I\'m having trouble connecting. Please make sure the selected AI model is running and try again.', false, true);
+                console.error('Chat error:', error);
+            } finally {
+                sendButton.disabled = false;
+                chatInput.focus();
+            }
+        }
+    </script>
+</body>
+</html>

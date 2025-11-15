@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI API Platform - Enterprise AI Infrastructure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            color: white;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            border-radius: 10px;
+            color: #27ae60;
+        }
+        
+        .status.error {
+            background: rgba(231, 76, 60, 0.1);
+            border-color: rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🚀</div>
+        <h1>AJStudioz AI Platform</h1>
+        <p>Enterprise-grade AI API platform with GLM-4.6 and DeepSeek-R1. Your own AI infrastructure with OpenAI-compatible API.</p>
+        
+        <div class="buttons">
+            <a href="/docs.html" class="btn btn-primary">
+                📚 API Documentation
+            </a>
+            <a href="/developer.html" class="btn btn-primary">
+                🔑 Developer Dashboard
+            </a>
+            <a href="/chatbot.html" class="btn btn-secondary">
+                💬 Try Chat Demo
+            </a>
+            <a href="/admin.html" class="btn btn-secondary">
+                📊 Admin Dashboard
+            </a>
+        </div>
+        
+        <div class="features" style="margin-top: 2rem; text-align: left; max-width: 600px;">
+            <h3 style="text-align: center; margin-bottom: 1rem; color: #2c3e50;">✨ Enterprise Features</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 14px;">
+                <div>🔐 API Key Authentication</div>
+                <div>⚡ Rate Limiting</div>
+                <div>📊 Usage Analytics</div>
+                <div>🏥 Health Monitoring</div>
+                <div>💰 Usage-based Billing</div>
+                <div>🔄 OpenAI Compatible</div>
+                <div>🤖 Multiple AI Models</div>
+                <div>📈 Scalable Infrastructure</div>
+            </div>
+        </div>
+        
+        <div id="status" class="status" style="display: none;">
+            <strong>Status:</strong> <span id="statusText">Checking...</span>
+        </div>
+    </div>
+    
+    <script>
+        async function checkStatus() {
+            const statusDiv = document.getElementById('status');
+            const statusText = document.getElementById('statusText');
+            
+            statusDiv.style.display = 'block';
+            statusText.textContent = 'Checking AI models connection...';
+            
+            const models = [
+                { id: 'glm-4.6', name: 'GLM-4.6' },
+                { id: 'deepseek-r1', name: 'DeepSeek-R1' }
+            ];
+            
+            let results = [];
+            
+            for (const model of models) {
+                try {
+                    statusText.textContent = `Testing ${model.name}...`;
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-API-Key': 'ak-demo123456789'
+                        },
+                        body: JSON.stringify({ 
+                            model: model.id,
+                            messages: [{ role: 'user', content: 'Hello' }],
+                            max_tokens: 10
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.choices && data.choices[0]) {
+                        results.push(`✅ ${model.name}`);
+                    } else {
+                        results.push(`❌ ${model.name}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${model.name}`);
+                }
+            }
+            
+            const allWorking = results.every(r => r.includes('✅'));
+            statusDiv.className = allWorking ? 'status' : 'status error';
+            statusText.innerHTML = 'Model Status:<br>' + results.join('<br>');
+            
+            if (!allWorking) {
+                statusText.innerHTML += '<br><small>Make sure Ollama and ngrok are running with both models loaded.</small>';
+            }
+        }
+        
+        // Auto-check status on page load
+        window.addEventListener('load', checkStatus);
+    </script>
+</body>
+</html>

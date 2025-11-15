@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI API Platform - Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .card h3 {
+            color: #1e293b;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status.healthy {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status.error {
+            background: #fecaca;
+            color: #991b1b;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+        
+        .api-key-section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .api-key-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .logs {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+        
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .timestamp {
+            color: #888;
+        }
+        
+        .error {
+            color: #ff6b6b;
+        }
+        
+        .success {
+            color: #51cf66;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        
+        .tab-container {
+            margin-bottom: 2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 AJStudioz AI Platform - Admin Dashboard</h1>
+        <p>Your own AI infrastructure - Enterprise-grade API management and monitoring</p>
+    </div>
+    
+    <div class="container">
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('overview')">Overview</button>
+                <button class="tab" onclick="switchTab('metrics')">Metrics</button>
+                <button class="tab" onclick="switchTab('users')">Users</button>
+                <button class="tab" onclick="switchTab('models')">Models</button>
+                <button class="tab" onclick="switchTab('logs')">Logs</button>
+            </div>
+            
+            <div id="overview" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>🏥 System Health</h3>
+                        <div id="health-status" class="loading">Loading...</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📊 Quick Stats</h3>
+                        <div id="quick-stats" class="loading">Loading...</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🔑 API Configuration</h3>
+                        <div class="api-key-section">
+                            <label for="api-key">Your API Key:</label>
+                            <input type="text" id="api-key" class="api-key-input" placeholder="Enter your API key to test endpoints" />
+                            <button class="btn" onclick="testConnection()">Test Connection</button>
+                            <button class="btn btn-secondary" onclick="generateNewKey()">Generate New Key</button>
+                        </div>
+                        <div id="connection-status"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="metrics" class="tab-content">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>📈 Request Metrics</h3>
+                        <div class="chart-container">
+                            <canvas id="requestChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🔥 Model Usage</h3>
+                        <div class="chart-container">
+                            <canvas id="modelChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>⚡ Performance</h3>
+                        <div id="performance-metrics" class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="users" class="tab-content">
+                <div class="card">
+                    <h3>👥 User Management</h3>
+                    <div id="user-stats" class="loading">Loading...</div>
+                </div>
+            </div>
+            
+            <div id="models" class="tab-content">
+                <div class="card">
+                    <h3>🤖 Available Models</h3>
+                    <div id="models-list" class="loading">Loading...</div>
+                </div>
+            </div>
+            
+            <div id="logs" class="tab-content">
+                <div class="card">
+                    <h3>📝 System Logs</h3>
+                    <button class="btn" onclick="refreshLogs()">Refresh Logs</button>
+                    <div id="logs-container" class="logs">
+                        <div class="log-entry">
+                            <span class="timestamp">[2025-11-14 21:45:00]</span> 
+                            <span class="success">[INFO]</span> System initialized
+                        </div>
+                        <div class="log-entry">
+                            <span class="timestamp">[2025-11-14 21:45:01]</span> 
+                            <span class="success">[INFO]</span> Models loaded: GLM-4.6, DeepSeek-R1
+                        </div>
+                        <div class="log-entry">
+                            <span class="timestamp">[2025-11-14 21:45:02]</span> 
+                            <span class="success">[INFO]</span> API server ready on production
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let currentApiKey = '';
+        let charts = {};
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`button[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            // Load data for the active tab
+            loadTabData(tabName);
+        }
+
+        // Load data based on active tab
+        async function loadTabData(tab) {
+            switch(tab) {
+                case 'overview':
+                    await loadSystemHealth();
+                    await loadQuickStats();
+                    break;
+                case 'metrics':
+                    await loadMetrics();
+                    break;
+                case 'models':
+                    await loadModels();
+                    break;
+                case 'users':
+                    await loadUserStats();
+                    break;
+            }
+        }
+
+        // Load system health
+        async function loadSystemHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/api/dashboard?endpoint=health`);
+                const health = await response.json();
+                
+                const statusColor = health.status === 'healthy' ? 'healthy' : 
+                                  health.error_rate > 10 ? 'error' : 'warning';
+                
+                document.getElementById('health-status').innerHTML = `
+                    <div class="metric">
+                        <span>Status</span>
+                        <span class="status ${statusColor}">${health.status.toUpperCase()}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Uptime</span>
+                        <span class="metric-value">${Math.floor(health.uptime / 3600)}h ${Math.floor((health.uptime % 3600) / 60)}m</span>
+                    </div>
+                    <div class="metric">
+                        <span>Memory Usage</span>
+                        <span class="metric-value">${(health.memory_usage.heapUsed / 1024 / 1024).toFixed(1)} MB</span>
+                    </div>
+                    <div class="metric">
+                        <span>Avg Response Time</span>
+                        <span class="metric-value">${health.avg_response_time}ms</span>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('health-status').innerHTML = '<div class="error">Failed to load health status</div>';
+            }
+        }
+
+        // Load quick stats
+        async function loadQuickStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/dashboard?endpoint=metrics`, {
+                    headers: { 'X-API-Key': currentApiKey }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Authentication required for metrics');
+                }
+                
+                const metrics = await response.json();
+                
+                document.getElementById('quick-stats').innerHTML = `
+                    <div class="metric">
+                        <span>Total Requests</span>
+                        <span class="metric-value">${metrics.total_requests.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Total Tokens</span>
+                        <span class="metric-value">${metrics.total_tokens.toLocaleString()}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Error Rate</span>
+                        <span class="metric-value">${metrics.error_rate}%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Active Users</span>
+                        <span class="metric-value">${metrics.top_users.length}</span>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('quick-stats').innerHTML = '<div class="error">Authentication required for detailed metrics</div>';
+            }
+        }
+
+        // Test API connection
+        async function testConnection() {
+            const apiKey = document.getElementById('api-key').value.trim();
+            if (!apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            currentApiKey = apiKey;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/models`, {
+                    headers: { 'X-API-Key': apiKey }
+                });
+                
+                if (response.ok) {
+                    const models = await response.json();
+                    document.getElementById('connection-status').innerHTML = `
+                        <div class="status success" style="margin-top: 1rem;">
+                            ✅ Connected! Found ${models.data.length} models
+                        </div>
+                    `;
+                    
+                    // Refresh other data now that we have auth
+                    await loadQuickStats();
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                document.getElementById('connection-status').innerHTML = `
+                    <div class="status error" style="margin-top: 1rem;">
+                        ❌ Connection failed: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Load models
+        async function loadModels() {
+            try {
+                const response = await fetch(`${API_BASE}/api/models`, {
+                    headers: { 'X-API-Key': currentApiKey }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Authentication required');
+                }
+                
+                const models = await response.json();
+                
+                const modelsList = models.data.map(model => `
+                    <div class="metric">
+                        <div>
+                            <strong>${model.id}</strong><br>
+                            <small style="color: #6b7280;">${model.description}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="metric-value">${model.max_tokens} tokens</div>
+                            <small style="color: #6b7280;">$${model.pricing.input_tokens}/1K input</small>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('models-list').innerHTML = modelsList;
+            } catch (error) {
+                document.getElementById('models-list').innerHTML = '<div class="error">Authentication required to view models</div>';
+            }
+        }
+
+        // Generate new API key (placeholder)
+        function generateNewKey() {
+            const newKey = 'ak-' + Math.random().toString(36).substr(2, 32);
+            document.getElementById('api-key').value = newKey;
+            alert('New API key generated! (This is a demo - implement real key generation in production)');
+        }
+
+        // Refresh logs
+        function refreshLogs() {
+            const logsContainer = document.getElementById('logs-container');
+            const newLog = document.createElement('div');
+            newLog.className = 'log-entry';
+            newLog.innerHTML = `
+                <span class="timestamp">[${new Date().toISOString().slice(0, 19).replace('T', ' ')}]</span> 
+                <span class="success">[INFO]</span> Logs refreshed manually
+            `;
+            logsContainer.insertBefore(newLog, logsContainer.firstChild);
+        }
+
+        // Initialize dashboard
+        async function initDashboard() {
+            await loadSystemHealth();
+            
+            // Auto-refresh health every 30 seconds
+            setInterval(loadSystemHealth, 30000);
+        }
+
+        // Load initial data
+        initDashboard();
+    </script>
+</body>
+</html>
