@@ -1,46 +1,46 @@
-# 🔧 Simple AI Setup Guide
+# 🔧 AI Setup Guide - Cloud + Local
 
-## Two Types of Models
+## System Architecture
 
-### 🖥️ Local Models (Fast & Private)
-- **Qwen 3**: Chat and problem-solving
-- **GLM-4.6**: Advanced reasoning
-- ⚡ Fastest responses, runs on your PC
-- 🔒 Private, no internet needed after setup
+### ☁️ Cloud Models (Always Online via Vercel) 
+- **Kimi**: General purpose via Groq (24/7 available)
+- **Llama 70B**: Powerful reasoning via Groq (24/7 available)
+- **Mixtral 8x7B**: Balanced performance via Groq (24/7 available)
+- 🌐 **Always online** - No startup needed
+- 🚀 **Enterprise reliability** with multi-key protection
+- ⚡ **Instant responses** from Vercel edge network
 
-### ☁️ Cloud Models (Always Available) 
-- **Kimi**: General purpose via Groq
-- **Llama 70B**: Powerful reasoning via Groq  
-- **Mixtral 8x7B**: Balanced performance via Groq
-- 🌐 Always online, internet required
-- 🚀 Super fast cloud responses
+### 🖥️ Local Models (Optional - Start when needed)
+- **Qwen 3**: Chat and problem-solving (Local only)
+- **GLM-4.6**: Advanced reasoning (Local only)
+- 💻 **Private & Fast** when Ollama running
+- 🔒 **No internet needed** for inference
+- ⚡ **Fastest responses** for local usage
 
 ## Quick Setup
 
-### 1. Get Groq API Key (For Cloud Models)
-1. Visit: https://console.groq.com
-2. Sign up and create API key
-3. Copy key (starts with `gsk_...`)
+### 1. Cloud Models (Already Online!) ✅
+**Configured in Vercel environment variables:**
+- ☁️ **Kimi, Llama 70B, Mixtral** work 24/7
+- 🔑 **5 Groq API keys** for rate limit protection  
+- 🌐 **Always available** - No setup needed!
+- 🚀 **Enterprise-grade reliability**
 
-### 2. Add API Keys (Multiple for Rate Limit Protection)
-Open `.env` file and add your keys:
-```env
-GROQ_API_KEY1=gsk_your_first_key_here
-GROQ_API_KEY2=gsk_your_second_key_here
-GROQ_API_KEY3=gsk_your_third_key_here
-# Add up to 5 keys for best performance
-```
-
-**Pro Tip**: Multiple keys = No rate limits! System automatically rotates between them.
-
-### 3. Install Local Models
+### 2. Local Models (Optional)
+**Only if you want local/private inference:**
 ```bash
+# Install Ollama models when needed
 ollama pull qwen3:1.7b
 ollama pull glm-4.6:latest
+
+# Start Ollama when you want local models
+ollama serve
 ```
 
-### 4. Start Everything
-Desktop → Double-click `START_AJSTUDIOZ_AI.bat`
+### 3. Usage
+- **Cloud Models**: Work instantly, always online
+- **Local Models**: Start Ollama script when needed  
+- **Best of Both**: Use cloud for reliability, local for privacy
 
 ## How It Works
 
@@ -52,20 +52,22 @@ Desktop → Double-click `START_AJSTUDIOZ_AI.bat`
 
 ## Usage Guide
 
-### For Speed → Use Local Models
-- Select "Qwen 3" or "GLM-4.6" 
-- Requires Ollama running
-- Fastest responses
+### Primary: Use Cloud Models (Recommended) ☁️
+- **Select**: "Kimi", "Llama 70B", or "Mixtral" 
+- ✅ **Always available** (24/7 via Vercel)
+- ✅ **Enterprise reliability** with multi-key protection
+- ✅ **No setup needed** - Just use them!
 
-### For Reliability → Use Cloud Models  
-- Select "Kimi", "Llama 70B", or "Mixtral"
-- Always available
-- No Ollama needed
+### Optional: Local Models (When desired) 🖥️  
+- **Select**: "Qwen 3" or "GLM-4.6"
+- 💻 **Private & fast** when Ollama running
+- 🔒 **No internet required** for inference
+- 📝 **Start Ollama only when needed**
 
-### Mixed Usage
-- Start with local models for speed
-- Switch to cloud if local issues
-- Both work through same chatbot interface
+### Smart Strategy
+- **Default**: Use cloud models (always work)
+- **Privacy**: Start local models when needed
+- **Flexibility**: Both work through same interface
 
 ## Troubleshooting
 

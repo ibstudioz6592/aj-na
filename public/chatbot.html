@@ -300,14 +300,14 @@
             <h1 id="chatTitle">AI Assistant</h1>
             <p>Powered by your local AI models via Ollama</p>
             <select id="modelSelector" class="model-selector">
-                <optgroup label="🖥️ Local Models (Fast - Requires Ollama)">
-                    <option value="qwen3">Qwen 3 ⚡</option>
-                    <option value="glm-4.6">GLM-4.6 🧠</option>
+                <optgroup label="🖥️ Local Models (Optional - Start when needed)">
+                    <option value="qwen3">Qwen 3 ⚡ (Local only)</option>
+                    <option value="glm-4.6">GLM-4.6 🧠 (Local only)</option>
                 </optgroup>
-                <optgroup label="☁️ Cloud Models (Always Online)">
-                    <option value="kimi">Kimi (Groq) 🌙</option>
-                    <option value="llama-70b">Llama 70B (Groq) 🦙</option>
-                    <option value="mixtral">Mixtral 8x7B (Groq) 🔥</option>
+                <optgroup label="☁️ Cloud Models (Always Online via Vercel)">
+                    <option value="kimi" selected>Kimi (Groq) 🌙 24/7</option>
+                    <option value="llama-70b">Llama 70B (Groq) 🦙 24/7</option>
+                    <option value="mixtral">Mixtral 8x7B (Groq) 🔥 24/7</option>
                 </optgroup>
             </select>
         </div>
@@ -350,23 +350,23 @@
         const modelConfig = {
             'qwen3': {
                 name: 'Qwen 3 (Local)',
-                welcome: "Hello! I'm Qwen 3, running locally on your system. I'm fast, efficient, and great at chat, reasoning, and problem-solving. How can I help you today?"
+                welcome: "Hello! I'm Qwen 3, running locally when you start Ollama. I'm fast, efficient, and great at chat, reasoning, and problem-solving. Start Ollama locally to use me!"
             },
             'glm-4.6': {
                 name: 'GLM-4.6 (Local)',
-                welcome: "Hello! I'm GLM-4.6, your local AI assistant. I'm running on your machine through Ollama and can help with reasoning, coding, analysis, and conversations. What would you like to explore?"
+                welcome: "Hello! I'm GLM-4.6, your local AI assistant. I run on your machine through Ollama for fast, private conversations. Start Ollama to activate me!"
             },
             'kimi': {
-                name: 'Kimi (Groq Cloud)',
-                welcome: "Hello! I'm Kimi, powered by Groq's lightning-fast cloud infrastructure. I'm always available as your reliable backup AI. How may I help you today?"
+                name: 'Kimi (Always Online)',
+                welcome: "Hello! I'm Kimi, always available 24/7 via Vercel cloud deployment. Powered by Groq's lightning-fast infrastructure with multi-key rate limit protection. How may I help you today?"
             },
             'llama-70b': {
-                name: 'Llama 70B (Groq Cloud)',
-                welcome: "Hello! I'm Llama 70B via Groq. I'm a powerful cloud model with extensive knowledge and capabilities. What would you like to discuss?"
+                name: 'Llama 70B (Always Online)',
+                welcome: "Hello! I'm Llama 70B, always online via Vercel cloud. I'm a powerful model with extensive knowledge, running 24/7 with enterprise-grade reliability. What would you like to discuss?"
             },
             'mixtral': {
-                name: 'Mixtral 8x7B (Groq Cloud)',
-                welcome: "Hello! I'm Mixtral 8x7B via Groq. I'm efficient, reliable, and ready to help with various tasks. What can I assist you with?"
+                name: 'Mixtral 8x7B (Always Online)',
+                welcome: "Hello! I'm Mixtral 8x7B, available 24/7 via Vercel cloud deployment. I'm efficient, reliable, and ready to help with various tasks anytime. What can I assist you with?"
             }
         };
         

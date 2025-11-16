@@ -131,13 +131,15 @@ export default async function handler(req, res) {
         const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
         
         // Multiple Groq API keys for rate limit management
+        // Priority: Vercel environment variables > .env file > fallback
         const GROQ_KEYS = [
             process.env.GROQ_API_KEY1,
             process.env.GROQ_API_KEY2,
             process.env.GROQ_API_KEY3,
             process.env.GROQ_API_KEY4,
-            process.env.GROQ_API_KEY5
-        ].filter(key => key && key !== 'your_groq_api_key_here');
+            process.env.GROQ_API_KEY5,
+            process.env.GROQ_API_KEY // Legacy support
+        ].filter(key => key && key !== 'your_groq_api_key_here' && key.startsWith('gsk_'));
         
         // Simple round-robin key selection
         let currentKeyIndex = 0;
@@ -164,7 +166,7 @@ export default async function handler(req, res) {
                 const apiKey = getNextGroqKey();
                 
                 try {
-                    console.log(`Trying Groq API key ${attempt + 1}/${GROQ_KEYS.length} for model: ${model}`);
+                    console.log(`🌐 Cloud: Groq API key ${attempt + 1}/${GROQ_KEYS.length} for ${model} (Always online via Vercel)`);
                     
                     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
@@ -213,7 +215,7 @@ export default async function handler(req, res) {
         if (modelConfig.provider === 'groq') {
             // Use Groq API for cloud models with multi-key rotation (independent of Ollama)
             try {
-                console.log(`🌐 Using Groq cloud model: ${modelConfig.groq} (${GROQ_KEYS.length} keys available)`);
+                console.log(`☁️ Vercel Cloud: ${modelConfig.groq} (${GROQ_KEYS.length} keys, always online)`);
                 const groqResponse = await callGroqAPI(
                     modelConfig.groq,
                     messages,
@@ -261,7 +263,7 @@ export default async function handler(req, res) {
             });
             
             if (!response.ok) {
-                throw new Error(`Cannot connect to local Ollama model '${modelConfig.ollama}': ${response.status} ${response.statusText}. Make sure Ollama is running and the model is installed.`);
+                throw new Error(`🖥️ Local model '${modelConfig.ollama}' unavailable: ${response.status} ${response.statusText}. Start Ollama locally or use cloud models (always available).`);
             }
             
             data = await response.json();
@@ -533,7 +535,9 @@ export default async function handler(req, res) {
                 load_duration_ms: Math.round((data.load_duration || 0) / 1000000),
                 cloud_model: modelConfig.provider === 'groq',
                 groq_keys_available: GROQ_KEYS.length,
-                rate_limit_protection: GROQ_KEYS.length > 1
+                rate_limit_protection: GROQ_KEYS.length > 1,
+                deployment: process.env.VERCEL ? 'vercel_cloud' : 'local_development',
+                always_online: process.env.VERCEL ? true : false
             },
             temperature: temperature,
             top_p: top_p,
