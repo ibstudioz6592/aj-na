@@ -29,35 +29,47 @@ In the project folder, right-click → "Run with PowerShell":
 TEST_API.ps1
 ```
 
-## 🌐 Your API Endpoint
+## 🌐 Your API Endpoints
 
+### Cloud Models (24/7 - Recommended)
 ```bash
 curl -X POST "https://api.ajstudioz.dev/api/chat" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: aj-demo123456789abcdef" \
   -d '{
-    "model": "qwen3",
-    "messages": [{"role": "user", "content": "hello"}],
+    "model": "kimi",
+    "messages": [{"role": "user", "content": "Hello from Vercel cloud!"}],
+    "stream": false
+  }'
+```
+
+### Local Models (When Ollama Running)
+```bash
+curl -X POST "https://local-api.ajstudioz.dev/api/chat" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: aj-demo123456789abcdef" \
+  -d '{
+    "model": "qwen3-local",
+    "messages": [{"role": "user", "content": "Hello local model!"}],
     "stream": false
   }'
 ```
 
 ## 🤖 Available Models
 
-### 🖥️ Local Models (Fastest)
-| Model | Size | Best For | Status |
-|-------|------|----------|--------|
-| `qwen3` | 1.7B | Fast responses, chat | ✅ Primary |
-| `glm-4.6` | Cloud | Advanced reasoning | ✅ Local |
-| `deepseek-r1-small` | 1.5B | Lightweight reasoning | ✅ Local |
-| `qwen2` | 0.5B | Ultra-fast, simple tasks | ✅ Local |
-
-### ☁️ Cloud Models (Always Available - Groq API)
+### ☁️ Cloud Models (Always Online 24/7 via Vercel)
 | Model | Provider | Best For | Status |
 |-------|----------|----------|--------|
-| `kimi` | Groq | Reliable backup, always online | ✅ Cloud |
-| `llama-3.1-70b` | Groq | Powerful, extensive knowledge | ✅ Cloud |
-| `gemma2-9b` | Groq | Efficient, balanced performance | ✅ Cloud |
+| `kimi` | MoonShot AI (Groq) | Advanced chat & instruction following | ✅ 24/7 |
+| `qwen3` | Qwen 32B (Groq) | Powerful reasoning with 32B parameters | ✅ 24/7 |
+| `llama-4` | Meta Llama 4 (Groq) | Advanced model with 128K context | ✅ 24/7 |
+| `gpt-oss` | GPT OSS 20B (Groq) | Open-source optimized performance | ✅ 24/7 |
+
+### 🖥️ Local Models (Optional - Start when needed)
+| Model | Size | Best For | Status |
+|-------|------|----------|--------|
+| `qwen3-local` | 1.7B | Fast responses, chat | 🖥️ Local |
+| `glm-4.6` | Latest | Advanced reasoning | 🖥️ Local |
 
 ## ⚙️ Configuration
 
@@ -66,9 +78,11 @@ curl -X POST "https://api.ajstudioz.dev/api/chat" \
 - Test Key: `aj-test987654321fedcba`
 
 ### Endpoints
-- **Global:** `https://api.ajstudioz.dev/api/chat`
-- **Local:** `http://localhost:3001/api/chat`
+- **Cloud Models (24/7):** `https://api.ajstudioz.dev/api/chat`
+- **Local Models:** `https://local-api.ajstudioz.dev/api/chat`
+- **Local Development:** `http://localhost:3001/api/chat`
 - **Health Check:** `http://localhost:3001/health`
+- **Chatbot Interface:** `https://api.ajstudioz.dev/chatbot.html`
 
 ## 📁 Project Files
 
@@ -161,7 +175,7 @@ Since you deleted the domain from Vercel, the DNS record in Cloudflare Dashboard
 
 ## 📱 Example Usage
 
-### PowerShell
+### PowerShell (Vercel Cloud)
 ```powershell
 $headers = @{
     "Content-Type" = "application/json"
@@ -169,14 +183,14 @@ $headers = @{
 }
 
 $body = @{
-    model = "qwen3"
-    messages = @(@{ role = "user"; content = "hello" })
+    model = "kimi"
+    messages = @(@{ role = "user"; content = "Hello from Vercel cloud!" })
 } | ConvertTo-Json
 
 Invoke-RestMethod -Uri "https://api.ajstudioz.dev/api/chat" -Method POST -Headers $headers -Body $body
 ```
 
-### JavaScript
+### JavaScript (Vercel Cloud)
 ```javascript
 const response = await fetch('https://api.ajstudioz.dev/api/chat', {
   method: 'POST',
@@ -185,8 +199,8 @@ const response = await fetch('https://api.ajstudioz.dev/api/chat', {
     'X-API-Key': 'aj-demo123456789abcdef'
   },
   body: JSON.stringify({
-    model: 'qwen3',
-    messages: [{ role: 'user', content: 'hello' }]
+    model: 'kimi',
+    messages: [{ role: 'user', content: 'Hello from Vercel!' }]
   })
 });
 

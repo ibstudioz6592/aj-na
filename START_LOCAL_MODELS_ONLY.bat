@@ -7,12 +7,12 @@ echo ================================================================
 echo              AJSTUDIOZ AI - LOCAL MODELS STARTER
 echo ================================================================
 echo.
-echo ☁️  Cloud models (Kimi, Llama 70B, Mixtral) are ALWAYS ONLINE
-echo     via Vercel deployment - No startup needed!
+echo ☁️  Cloud models (Kimi, Qwen 3 32B, Llama 4, GPT OSS) are ALWAYS ONLINE
+echo     via Vercel at api.ajstudioz.dev - No startup needed!
 echo.
-echo 🖥️  This script starts LOCAL MODELS only (optional):
-echo     • Qwen 3 (Fast chat)
-echo     • GLM-4.6 (Advanced reasoning)
+echo 🖥️  This script starts LOCAL MODELS only (for privacy):
+echo     • Qwen 3 Local (Fast chat & reasoning)
+echo     • GLM-4.6 (Advanced local reasoning)
 echo.
 echo ================================================================
 echo.
@@ -27,9 +27,10 @@ if errorlevel 1 (
     echo    Get Ollama from: https://ollama.ai
     echo.
     echo 💡 Meanwhile, use these models that are ALWAYS AVAILABLE:
-    echo    • Kimi (Groq Cloud)
-    echo    • Llama 70B (Groq Cloud)  
-    echo    • Mixtral 8x7B (Groq Cloud)
+    echo    • Kimi K2 Instruct (24/7 at api.ajstudioz.dev)
+    echo    • Qwen 3 32B (24/7 at api.ajstudioz.dev)  
+    echo    • Llama 4 Maverick (24/7 at api.ajstudioz.dev)
+    echo    • GPT OSS 20B (24/7 at api.ajstudioz.dev)
     echo.
     pause
     exit /b 1
@@ -74,12 +75,13 @@ echo     • Qwen 3 - Available now
 echo     • GLM-4.6 - Available now
 echo.
 echo ☁️  CLOUD MODELS (Always Online via Vercel):
-echo     • Kimi (Groq) - Always available 24/7
-echo     • Llama 70B (Groq) - Always available 24/7
-echo     • Mixtral 8x7B (Groq) - Always available 24/7
+echo     • Kimi K2 Instruct - Always available 24/7
+echo     • Qwen 3 32B - Always available 24/7
+echo     • Llama 4 Maverick - Always available 24/7
+echo     • GPT OSS 20B - Always available 24/7
 echo.
-echo 🌐 Your API Endpoint: https://your-vercel-app.vercel.app/api/chat
-echo 💻 Local API: http://localhost:3001/api/chat (if running locally)
+echo 🌐 Cloud API: https://api.ajstudioz.dev/api/chat (always online)
+echo 🖥️  Local API: https://local-api.ajstudioz.dev/api/chat (via tunnel)
 echo.
 echo 🎯 USAGE:
 echo     • Use CLOUD models for reliability (always work)
@@ -89,10 +91,14 @@ echo.
 echo ================================================================
 echo.
 echo Ollama is now running for local models.
-echo Cloud models work independently - no startup needed!
+echo.
+echo 💡 USAGE TIPS:
+echo   • Local models: Use when you need privacy
+echo   • Cloud models: Always available at api.ajstudioz.dev
+echo   • Both work through the same chatbot interface
 echo.
 echo Close this window when you're done with local models.
-echo Cloud models will continue working 24/7.
+echo Cloud models continue working 24/7 independently!
 echo.
 timeout /t 10
 echo Ready! 🚀

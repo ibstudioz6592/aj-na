@@ -513,10 +513,19 @@
             
             try {
                 const selectedModel = modelSelector.value;
-                // Use the correct API endpoint - will work locally and via Cloudflare tunnel
-                const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                    ? 'http://localhost:3001/api/chat'
-                    : 'https://local-api.ajstudioz.dev/api/chat';
+                // Use separate domains: api.ajstudioz.dev for cloud, local-api.ajstudioz.dev for local
+                const selectedModel = document.getElementById('modelSelector').value;
+                let apiUrl;
+                
+                // Cloud models always use Vercel deployment (api.ajstudioz.dev)
+                if (['kimi', 'qwen3', 'llama-4', 'gpt-oss'].includes(selectedModel)) {
+                    apiUrl = 'https://api.ajstudioz.dev/api/chat';
+                } else {
+                    // Local models use localhost or local-api tunnel
+                    apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                        ? 'http://localhost:3001/api/chat'
+                        : 'https://local-api.ajstudioz.dev/api/chat';
+                }
                 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
