@@ -105,7 +105,8 @@ export default async function handler(req, res) {
             'kimi': { groq: 'moonshotai/kimi-k2-instruct-0905', name: 'Kimi K2 Instruct (24/7)', type: 'chat', streaming: false, provider: 'groq' },
             'qwen3': { groq: 'qwen/qwen3-32b', name: 'Qwen 3 32B (24/7)', type: 'reasoning', streaming: false, provider: 'groq' },
             'llama-4': { groq: 'meta-llama/llama-4-maverick-17b-128e-instruct', name: 'Llama 4 Maverick (24/7)', type: 'advanced', streaming: false, provider: 'groq' },
-            'gpt-oss': { groq: 'openai/gpt-oss-20b', name: 'GPT OSS 20B (24/7)', type: 'chat', streaming: false, provider: 'groq' }
+            'gpt-oss': { groq: 'openai/gpt-oss-20b', name: 'GPT OSS 20B (24/7)', type: 'chat', streaming: false, provider: 'groq' },
+            'gpt-oss-120b': { groq: 'openai/gpt-oss-120b', name: 'GPT OSS 120B (24/7)', type: 'advanced', streaming: false, provider: 'groq' }
         };
         
         const modelConfig = modelMap[model];
