@@ -98,8 +98,8 @@ export default async function handler(req, res) {
         // Model mapping - Simple local + cloud setup
         const modelMap = {
             // Local Ollama Models (require Ollama running)
-            'qwen3-local': { ollama: 'qwen3:1.7b', name: 'Qwen 3 (Local)', type: 'chat', streaming: true, provider: 'ollama' },
-            'glm-4.6': { ollama: 'glm-4.6:latest', name: 'GLM-4.6 (Local)', type: 'reasoning', streaming: true, provider: 'ollama' },
+            'qwen3-local': { ollama: 'qwen3:1.7b', name: 'Qwen 3:1.7B (Local)', type: 'chat', streaming: true, provider: 'ollama' },
+            'glm-4.6': { ollama: 'glm-4.6:cloud', name: 'GLM-4.6:Cloud (Local)', type: 'reasoning', streaming: true, provider: 'ollama' },
             
             // Cloud Groq Models (always available 24/7)
             'kimi': { groq: 'moonshotai/kimi-k2-instruct-0905', name: 'Kimi K2 Instruct (24/7)', type: 'chat', streaming: false, provider: 'groq' },

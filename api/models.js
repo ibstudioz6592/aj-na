@@ -202,12 +202,12 @@ const AVAILABLE_MODELS = [
     ],
     root: "qwen3-local",
     parent: null,
-    description: "Qwen 2.5:3B - Fast local model for privacy-focused chat and reasoning (qwen2.5:3b)",
+    description: "Qwen 3:1.7B - Fast local model for privacy-focused chat and reasoning (qwen3:1.7b)",
     max_tokens: 8192,
     deployment: "local",
     always_online: false,
     provider: "ollama",
-    ollama_model: "qwen2.5:3b",
+    ollama_model: "qwen3:1.7b",
     pricing: {
       input_tokens: 0,
       output_tokens: 0
@@ -247,12 +247,12 @@ const AVAILABLE_MODELS = [
     ],
     root: "glm-4.6",
     parent: null,
-    description: "GLM-4.6 - Powerful local conversational AI model with strong general capabilities (glm4:9b)",
+    description: "GLM-4.6:Cloud - Powerful local conversational AI model with strong general capabilities (glm-4.6:cloud)",
     max_tokens: 8192,
     deployment: "local",
     always_online: false,
     provider: "ollama",
-    ollama_model: "glm4:9b",
+    ollama_model: "glm-4.6:cloud",
     pricing: {
       input_tokens: 0,
       output_tokens: 0

@@ -112,7 +112,31 @@
     <div class="container">
         <div class="logo">🚀</div>
         <h1>AJStudioz AI Platform</h1>
-        <p>Enterprise-grade AI API platform with GLM-4.6 and DeepSeek-R1. Your own AI infrastructure with OpenAI-compatible API.</p>
+        <p>Hybrid Cloud & Local AI Platform - Best of both worlds with 24/7 cloud models + privacy-focused local options.</p>
+        
+        <!-- Local Models Starter Section -->
+        <div class="local-starter" style="margin-bottom: 30px; padding: 20px; background: rgba(52, 152, 219, 0.1); border: 2px solid rgba(52, 152, 219, 0.3); border-radius: 15px;">
+            <h3 style="color: #2980b9; margin-bottom: 15px;">🏠 Local Models Setup</h3>
+            <p style="margin-bottom: 15px; color: #34495e; font-size: 14px;">
+                Start your private local AI models for maximum privacy and offline usage.
+            </p>
+            <button onclick="startLocalModels()" class="btn btn-primary" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                🚀 Start Local Models (Privacy Mode)
+            </button>
+            <div id="localStatus" style="margin-top: 10px; font-size: 12px; color: #7f8c8d;"></div>
+        </div>
+
+        <!-- Cloud AI Test Section -->
+        <div class="cloud-test" style="margin-bottom: 30px; padding: 20px; background: rgba(46, 204, 113, 0.1); border: 2px solid rgba(46, 204, 113, 0.3); border-radius: 15px;">
+            <h3 style="color: #27ae60; margin-bottom: 15px;">🌐 Cloud AI Models Test</h3>
+            <p style="margin-bottom: 15px; color: #34495e; font-size: 14px;">
+                Test our always-online cloud models powered by Groq (Kimi K2, Qwen 3, Llama 4, GPT OSS).
+            </p>
+            <button onclick="testCloudModels()" class="btn btn-primary" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+                🧪 Test Cloud AI Responses
+            </button>
+            <div id="cloudTestResults" style="margin-top: 15px; font-size: 13px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
         
         <div class="buttons">
             <a href="/docs.html" class="btn btn-primary">

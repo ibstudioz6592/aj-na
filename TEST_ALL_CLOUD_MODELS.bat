@@ -8,7 +8,7 @@ echo             TEST ALL CLOUD MODELS (24/7 AVAILABLE)
 echo ================================================================
 echo.
 
-set API_URL=https://local-api.ajstudioz.dev/api/chat
+set API_URL=https://api.ajstudioz.dev/api/chat
 set API_KEY=aj-demo123456789abcdef
 
 echo Testing all 4 new cloud models with specific Groq API endpoints...
