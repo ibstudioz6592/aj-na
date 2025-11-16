@@ -95,13 +95,16 @@ export default async function handler(req, res) {
             res.setHeader('Connection', 'keep-alive');
         }
         
-        // Model mapping - Your actual installed local models
+        // Model mapping - Simple local + cloud setup
         const modelMap = {
-            'glm-4.6': { ollama: 'glm-4.6:cloud', name: 'GLM-4.6', type: 'reasoning', streaming: true },
-            'qwen3': { ollama: 'qwen3:1.7b', name: 'Qwen 3', type: 'chat', streaming: true },
-            'deepseek-r1': { ollama: 'deepseek-r1:8b', name: 'DeepSeek R1', type: 'reasoning', streaming: true },
-            'deepseek-r1-small': { ollama: 'deepseek-r1:1.5b', name: 'DeepSeek R1 Small', type: 'chat', streaming: true },
-            'qwen2': { ollama: 'qwen2:0.5b', name: 'Qwen 2', type: 'chat', streaming: true }
+            // Local Ollama Models (require Ollama running)
+            'qwen3': { ollama: 'qwen3:1.7b', name: 'Qwen 3 (Local)', type: 'chat', streaming: true, provider: 'ollama' },
+            'glm-4.6': { ollama: 'glm-4.6:latest', name: 'GLM-4.6 (Local)', type: 'reasoning', streaming: true, provider: 'ollama' },
+            
+            // Cloud Groq Models (always available, independent)
+            'kimi': { groq: 'llama-3.1-8b-instant', name: 'Kimi (Groq Cloud)', type: 'chat', streaming: false, provider: 'groq' },
+            'llama-70b': { groq: 'llama-3.1-70b-versatile', name: 'Llama 70B (Groq)', type: 'reasoning', streaming: false, provider: 'groq' },
+            'mixtral': { groq: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B (Groq)', type: 'chat', streaming: false, provider: 'groq' }
         };
         
         const modelConfig = modelMap[model];
@@ -124,42 +127,145 @@ export default async function handler(req, res) {
             return msg.content;
         }).join('\n\n');
         
-        // Try LocalTunnel first, fallback to cloud responses
+        // Try local Ollama first, fallback to Groq cloud
         const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
         
-        let data;
-        let usingCloudFallback = false;
+        // Multiple Groq API keys for rate limit management
+        const GROQ_KEYS = [
+            process.env.GROQ_API_KEY1,
+            process.env.GROQ_API_KEY2,
+            process.env.GROQ_API_KEY3,
+            process.env.GROQ_API_KEY4,
+            process.env.GROQ_API_KEY5
+        ].filter(key => key && key !== 'your_groq_api_key_here');
         
-        // Connect directly to YOUR local Ollama models
-        // Optimized for faster responses
-        const inferenceParams = {
-            model: modelConfig.ollama,
-            prompt: prompt,
-            stream: stream,
-            options: {
-                temperature: temperature,
-                num_predict: max_tokens,
-                top_p: top_p,
-                stop: ['Human:', 'User:', '\n\nHuman:', '\n\nUser:'],
-                num_ctx: 2048,  // Smaller context for faster responses
-                num_thread: 4    // Use 4 threads for optimal performance
-            }
-        };
-        
-        const response = await fetch(`${OLLAMA_URL}/api/generate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'User-Agent': 'AJStudioz-API/1.0'
-            },
-            body: JSON.stringify(inferenceParams)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Cannot connect to your local Ollama models: ${response.status} ${response.statusText}`);
+        // Simple round-robin key selection
+        let currentKeyIndex = 0;
+        function getNextGroqKey() {
+            if (GROQ_KEYS.length === 0) return null;
+            const key = GROQ_KEYS[currentKeyIndex];
+            currentKeyIndex = (currentKeyIndex + 1) % GROQ_KEYS.length;
+            return key;
         }
         
-        data = await response.json();
+        let data;
+        let usingGroqFallback = false;
+        
+        // Function to call Groq API with key rotation (independent of Ollama)
+        async function callGroqAPI(model, messages, options = {}) {
+            if (GROQ_KEYS.length === 0) {
+                throw new Error('No Groq API keys configured. Please add GROQ_API_KEY1, GROQ_API_KEY2, etc. to .env file');
+            }
+            
+            let lastError = null;
+            
+            // Try each API key in rotation until one works
+            for (let attempt = 0; attempt < GROQ_KEYS.length; attempt++) {
+                const apiKey = getNextGroqKey();
+                
+                try {
+                    console.log(`Trying Groq API key ${attempt + 1}/${GROQ_KEYS.length} for model: ${model}`);
+                    
+                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: messages,
+                            max_tokens: options.max_tokens || 1000,
+                            temperature: options.temperature || 0.7,
+                            top_p: options.top_p || 0.9,
+                            stream: false
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        console.log(`✅ Groq API success with key ${attempt + 1}`);
+                        return await response.json();
+                    }
+                    
+                    // If rate limited (429), try next key
+                    if (response.status === 429) {
+                        console.log(`⚠️  Rate limit hit on key ${attempt + 1}, trying next key...`);
+                        lastError = new Error(`Rate limit exceeded on API key ${attempt + 1}`);
+                        continue;
+                    }
+                    
+                    // For other errors, still try next key but log the error
+                    const errorData = await response.text();
+                    lastError = new Error(`Groq API error ${response.status}: ${errorData}`);
+                    console.log(`❌ Error with key ${attempt + 1}: ${response.status} - ${errorData}`);
+                    
+                } catch (fetchError) {
+                    lastError = fetchError;
+                    console.log(`❌ Network error with key ${attempt + 1}: ${fetchError.message}`);
+                }
+            }
+            
+            // All keys failed
+            throw new Error(`All ${GROQ_KEYS.length} Groq API keys failed. Last error: ${lastError?.message || 'Unknown error'}`);
+        }
+        
+        // Use appropriate provider (Ollama local or Groq cloud)
+        if (modelConfig.provider === 'groq') {
+            // Use Groq API for cloud models with multi-key rotation (independent of Ollama)
+            try {
+                console.log(`🌐 Using Groq cloud model: ${modelConfig.groq} (${GROQ_KEYS.length} keys available)`);
+                const groqResponse = await callGroqAPI(
+                    modelConfig.groq,
+                    messages,
+                    { max_tokens, temperature, top_p }
+                );
+                
+                // Convert Groq response to our format
+                data = {
+                    response: groqResponse.choices[0].message.content,
+                    done: true,
+                    eval_count: groqResponse.usage?.completion_tokens || 0,
+                    prompt_eval_count: groqResponse.usage?.prompt_tokens || 0,
+                    total_duration: 300000000, // 300ms in nanoseconds (faster with rotation)
+                    eval_duration: 200000000
+                };
+                usingGroqFallback = true;
+            } catch (groqError) {
+                console.error('🚨 All Groq API keys failed:', groqError.message);
+                throw new Error(`Groq Cloud Error: ${groqError.message}`);
+            }
+        } else {
+            // Connect directly to YOUR local Ollama models
+            // Optimized for faster responses
+            const inferenceParams = {
+                model: modelConfig.ollama,
+                prompt: prompt,
+                stream: stream,
+                options: {
+                    temperature: temperature,
+                    num_predict: max_tokens,
+                    top_p: top_p,
+                    stop: ['Human:', 'User:', '\n\nHuman:', '\n\nUser:'],
+                    num_ctx: 2048,  // Smaller context for faster responses
+                    num_thread: 4    // Use 4 threads for optimal performance
+                }
+            };
+            
+            const response = await fetch(`${OLLAMA_URL}/api/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'AJStudioz-API/1.0'
+                },
+                body: JSON.stringify(inferenceParams)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Cannot connect to local Ollama model '${modelConfig.ollama}': ${response.status} ${response.statusText}. Make sure Ollama is running and the model is installed.`);
+            }
+            
+            data = await response.json();
+        }
 
         // Handle streaming response
         if (stream) {
@@ -419,12 +525,15 @@ export default async function handler(req, res) {
             metadata: {
                 request_id: req.requestId,
                 user_id: req.user.id,
-                model_provider: "ollama",
+                model_provider: modelConfig.provider,
                 model_config: modelConfig.name,
                 response_time_ms: duration,
                 total_duration_ms: Math.round((data.total_duration || 0) / 1000000),
                 eval_duration_ms: Math.round((data.eval_duration || 0) / 1000000),
-                load_duration_ms: Math.round((data.load_duration || 0) / 1000000)
+                load_duration_ms: Math.round((data.load_duration || 0) / 1000000),
+                cloud_model: modelConfig.provider === 'groq',
+                groq_keys_available: GROQ_KEYS.length,
+                rate_limit_protection: GROQ_KEYS.length > 1
             },
             temperature: temperature,
             top_p: top_p,

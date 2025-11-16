@@ -53,11 +53,13 @@ echo.
 echo   https://local-api.ajstudioz.dev/api/chat
 echo.
 echo Available Models:
-echo   - qwen3 (Qwen 3 - Fast)
-echo   - glm-4.6 (GLM 4.6 - Advanced)
-echo   - deepseek-r1 (DeepSeek R1 - Reasoning)
-echo   - deepseek-r1-small (DeepSeek R1 Small)
-echo   - qwen2 (Qwen 2 - Lightweight)
+echo   LOCAL (Fast):
+echo   - qwen3 (Qwen 3 - Chat & Problem Solving)
+echo   - glm-4.6 (GLM 4.6 - Advanced Reasoning)
+echo   CLOUD (Always Online):
+echo   - kimi (Kimi via Groq - Reliable)
+echo   - llama-70b (Llama 70B via Groq - Powerful)
+echo   - mixtral (Mixtral 8x7B via Groq - Balanced)
 echo.
 echo Test Command:
 echo   curl -X POST "https://local-api.ajstudioz.dev/api/chat" ^

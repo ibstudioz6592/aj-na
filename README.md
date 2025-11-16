@@ -44,13 +44,20 @@ curl -X POST "https://api.ajstudioz.dev/api/chat" \
 
 ## 🤖 Available Models
 
-| Model | Size | Best For |
-|-------|------|----------|
-| `qwen3` | 1.7B | Fast responses, chat |
-| `glm-4.6` | Cloud | Advanced reasoning |
-| `deepseek-r1` | 8B | Complex reasoning |
-| `deepseek-r1-small` | 1.5B | Lightweight reasoning |
-| `qwen2` | 0.5B | Ultra-fast, simple tasks |
+### 🖥️ Local Models (Fastest)
+| Model | Size | Best For | Status |
+|-------|------|----------|--------|
+| `qwen3` | 1.7B | Fast responses, chat | ✅ Primary |
+| `glm-4.6` | Cloud | Advanced reasoning | ✅ Local |
+| `deepseek-r1-small` | 1.5B | Lightweight reasoning | ✅ Local |
+| `qwen2` | 0.5B | Ultra-fast, simple tasks | ✅ Local |
+
+### ☁️ Cloud Models (Always Available - Groq API)
+| Model | Provider | Best For | Status |
+|-------|----------|----------|--------|
+| `kimi` | Groq | Reliable backup, always online | ✅ Cloud |
+| `llama-3.1-70b` | Groq | Powerful, extensive knowledge | ✅ Cloud |
+| `gemma2-9b` | Groq | Efficient, balanced performance | ✅ Cloud |
 
 ## ⚙️ Configuration
 
