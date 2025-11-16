@@ -1,29 +1,22 @@
 {
   "version": 2,
   "name": "ajstudioz-ai-api",
-  "builds": [
-    {
-      "src": "proxy-server.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 30
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/proxy-server.js"
+      "source": "/(.*)",
+      "destination": "/public/$1"
     }
   ],
   "env": {
-    "NODE_ENV": "production",
-    "OLLAMA_URL": "http://localhost:11434"
-  },
-  "functions": {
-    "proxy-server.js": {
-      "maxDuration": 30
-    }
+    "NODE_ENV": "production"
   }
 }
