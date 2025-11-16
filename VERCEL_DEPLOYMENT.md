@@ -23,9 +23,10 @@ NODE_ENV=production
 ## 🌐 Deployment Benefits
 
 ### Always Online Cloud Models
-- **Kimi (Groq)**: 24/7 availability
-- **Llama 70B (Groq)**: 24/7 availability  
-- **Mixtral 8x7B (Groq)**: 24/7 availability
+- **Kimi K2 Instruct**: 24/7 availability via MoonShot AI
+- **Qwen 3 32B**: 24/7 availability with 32B parameters  
+- **Llama 4 Maverick 17B**: 24/7 availability with 128K context
+- **GPT OSS 20B**: 24/7 availability, open-source optimized
 - **Rate Limit Protection**: 5x capacity with key rotation
 - **Zero Downtime**: Automatic failover between keys
 

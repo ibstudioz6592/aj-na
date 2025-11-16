@@ -3,9 +3,10 @@
 ## System Architecture
 
 ### ☁️ Cloud Models (Always Online via Vercel) 
-- **Kimi**: General purpose via Groq (24/7 available)
-- **Llama 70B**: Powerful reasoning via Groq (24/7 available)
-- **Mixtral 8x7B**: Balanced performance via Groq (24/7 available)
+- **Kimi K2 Instruct**: Advanced chat via MoonShot AI (24/7 available)
+- **Qwen 3 32B**: Powerful 32B reasoning model (24/7 available)
+- **Llama 4 Maverick 17B**: Advanced 128K context model (24/7 available)
+- **GPT OSS 20B**: Open-source optimized model (24/7 available)
 - 🌐 **Always online** - No startup needed
 - 🚀 **Enterprise reliability** with multi-key protection
 - ⚡ **Instant responses** from Vercel edge network

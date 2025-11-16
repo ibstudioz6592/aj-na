@@ -15,23 +15,23 @@ echo Testing both LOCAL and CLOUD models...
 echo.
 
 echo ----------------------------------------------------------------
-echo [1/2] Testing LOCAL model: Qwen 3
+echo [1/2] Testing LOCAL model: Qwen 3 (Local)
 echo ----------------------------------------------------------------
 curl -X POST "%API_URL%" ^
   -H "Content-Type: application/json" ^
   -H "X-API-Key: %API_KEY%" ^
-  -d "{\"model\": \"qwen3\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello, test local model\"}]}"
+  -d "{\"model\": \"qwen3-local\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello, test local model\"}]}"
 
 echo.
 echo.
 
 echo ----------------------------------------------------------------
-echo [2/2] Testing CLOUD model: Kimi (Groq)
+echo [2/2] Testing CLOUD model: Kimi K2 Instruct (24/7)
 echo ----------------------------------------------------------------
 curl -X POST "%API_URL%" ^
   -H "Content-Type: application/json" ^
   -H "X-API-Key: %API_KEY%" ^
-  -d "{\"model\": \"kimi\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello, test cloud model\"}]}"
+  -d "{\"model\": \"kimi\", \"messages\": [{\"role\": \"user\", \"content\": \"Hello, test Kimi K2 Instruct model\"}]}"
 
 echo.
 echo.

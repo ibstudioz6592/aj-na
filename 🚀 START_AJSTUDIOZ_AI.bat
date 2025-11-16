@@ -53,13 +53,14 @@ echo.
 echo   https://local-api.ajstudioz.dev/api/chat
 echo.
 echo Available Models:
-echo   LOCAL (Fast):
-echo   - qwen3 (Qwen 3 - Chat & Problem Solving)
+echo   LOCAL (Fast & Private):
+echo   - qwen3-local (Qwen 3 - Chat & Problem Solving)
 echo   - glm-4.6 (GLM 4.6 - Advanced Reasoning)
-echo   CLOUD (Always Online):
-echo   - kimi (Kimi via Groq - Reliable)
-echo   - llama-70b (Llama 70B via Groq - Powerful)
-echo   - mixtral (Mixtral 8x7B via Groq - Balanced)
+echo   CLOUD (Always Online 24/7):
+echo   - kimi (Kimi K2 Instruct - MoonShot AI)
+echo   - qwen3 (Qwen 3 32B - Powerful Reasoning)
+echo   - llama-4 (Llama 4 Maverick 17B - 128K Context)
+echo   - gpt-oss (GPT OSS 20B - Open Source Optimized)
 echo.
 echo Test Command:
 echo   curl -X POST "https://local-api.ajstudioz.dev/api/chat" ^

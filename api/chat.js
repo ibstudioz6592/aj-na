@@ -98,13 +98,14 @@ export default async function handler(req, res) {
         // Model mapping - Simple local + cloud setup
         const modelMap = {
             // Local Ollama Models (require Ollama running)
-            'qwen3': { ollama: 'qwen3:1.7b', name: 'Qwen 3 (Local)', type: 'chat', streaming: true, provider: 'ollama' },
+            'qwen3-local': { ollama: 'qwen3:1.7b', name: 'Qwen 3 (Local)', type: 'chat', streaming: true, provider: 'ollama' },
             'glm-4.6': { ollama: 'glm-4.6:latest', name: 'GLM-4.6 (Local)', type: 'reasoning', streaming: true, provider: 'ollama' },
             
-            // Cloud Groq Models (always available, independent)
-            'kimi': { groq: 'llama-3.1-8b-instant', name: 'Kimi (Groq Cloud)', type: 'chat', streaming: false, provider: 'groq' },
-            'llama-70b': { groq: 'llama-3.1-70b-versatile', name: 'Llama 70B (Groq)', type: 'reasoning', streaming: false, provider: 'groq' },
-            'mixtral': { groq: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B (Groq)', type: 'chat', streaming: false, provider: 'groq' }
+            // Cloud Groq Models (always available 24/7)
+            'kimi': { groq: 'moonshotai/kimi-k2-instruct-0905', name: 'Kimi K2 Instruct (24/7)', type: 'chat', streaming: false, provider: 'groq' },
+            'qwen3': { groq: 'qwen/qwen3-32b', name: 'Qwen 3 32B (24/7)', type: 'reasoning', streaming: false, provider: 'groq' },
+            'llama-4': { groq: 'meta-llama/llama-4-maverick-17b-128e-instruct', name: 'Llama 4 Maverick (24/7)', type: 'advanced', streaming: false, provider: 'groq' },
+            'gpt-oss': { groq: 'openai/gpt-oss-20b', name: 'GPT OSS 20B (24/7)', type: 'chat', streaming: false, provider: 'groq' }
         };
         
         const modelConfig = modelMap[model];
