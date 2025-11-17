@@ -72,6 +72,46 @@ const AVAILABLE_MODELS = [
     public_apps: null,
     max_completion_tokens: 40960
   },
+  {
+    id: "deepseek-r1-qwen3-8b",
+    object: "model",
+    created: 1699564800,
+    owned_by: "DeepSeek",
+    active: true,
+    context_window: 131072,
+    public_apps: null,
+    max_completion_tokens: 8192
+  },
+  {
+    id: "qwen3-coder",
+    object: "model",
+    created: 1699564800,
+    owned_by: "Alibaba Cloud",
+    active: true,
+    context_window: 131072,
+    public_apps: null,
+    max_completion_tokens: 8192
+  },
+  {
+    id: "mistral-small-24b",
+    object: "model",
+    created: 1699564800,
+    owned_by: "Mistral AI",
+    active: true,
+    context_window: 131072,
+    public_apps: null,
+    max_completion_tokens: 8192
+  },
+  {
+    id: "mistral-small-3.1-24b",
+    object: "model",
+    created: 1699564800,
+    owned_by: "Mistral AI",
+    active: true,
+    context_window: 131072,
+    public_apps: null,
+    max_completion_tokens: 8192
+  },
   // 🏠 LOCAL MODELS (Privacy Mode - When Ollama Running)
   {
     id: "qwen3-local",

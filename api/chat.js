@@ -112,7 +112,13 @@ export default async function handler(req, res) {
             'glm-4.5-air': { chutes: 'zai-org/GLM-4.5-Air', name: 'GLM-4.5 Air (24/7)', type: 'chat', streaming: false, provider: 'chutes' },
             
             // Cloud Cerebras AI Models (always available 24/7)
-            'zai-glm-4.6': { cerebras: 'zai-glm-4.6', name: 'ZAI GLM-4.6 (24/7)', type: 'reasoning', streaming: true, provider: 'cerebras' }
+            'zai-glm-4.6': { cerebras: 'zai-glm-4.6', name: 'ZAI GLM-4.6 (24/7)', type: 'reasoning', streaming: true, provider: 'cerebras' },
+            
+            // Cloud OpenRouter Models (always available 24/7 - FREE)
+            'deepseek-r1-qwen3-8b': { openrouter: 'deepseek/deepseek-r1-0528-qwen3-8b:free', name: 'DeepSeek R1 Qwen3 8B (24/7 Free)', type: 'reasoning', streaming: false, provider: 'openrouter' },
+            'qwen3-coder': { openrouter: 'qwen/qwen3-coder:free', name: 'Qwen3 Coder (24/7 Free)', type: 'coding', streaming: false, provider: 'openrouter' },
+            'mistral-small-24b': { openrouter: 'mistralai/mistral-small-24b-instruct-2501:free', name: 'Mistral Small 24B (24/7 Free)', type: 'chat', streaming: false, provider: 'openrouter' },
+            'mistral-small-3.1-24b': { openrouter: 'mistralai/mistral-small-3.1-24b-instruct:free', name: 'Mistral Small 3.1 24B (24/7 Free)', type: 'chat', streaming: false, provider: 'openrouter' }
         };
         
         const modelConfig = modelMap[model];
@@ -155,6 +161,15 @@ export default async function handler(req, res) {
         // Cerebras AI API key
         const CEREBRAS_API_KEY = process.env.CEREBRAS_API_KEY;
         
+        // Multiple OpenRouter API keys for rate limit management (5 keys)
+        const OPENROUTER_KEYS = [
+            process.env.OPENROUTER_API_KEY1,
+            process.env.OPENROUTER_API_KEY2,
+            process.env.OPENROUTER_API_KEY3,
+            process.env.OPENROUTER_API_KEY4,
+            process.env.OPENROUTER_API_KEY5
+        ].filter(key => key && key !== 'your_openrouter_api_key_here');
+        
         // Simple round-robin key selection
         let currentKeyIndex = 0;
         function getNextGroqKey() {
@@ -164,8 +179,76 @@ export default async function handler(req, res) {
             return key;
         }
         
+        // OpenRouter key rotation
+        let currentOpenRouterKeyIndex = 0;
+        function getNextOpenRouterKey() {
+            if (OPENROUTER_KEYS.length === 0) return null;
+            const key = OPENROUTER_KEYS[currentOpenRouterKeyIndex];
+            currentOpenRouterKeyIndex = (currentOpenRouterKeyIndex + 1) % OPENROUTER_KEYS.length;
+            return key;
+        }
+        
         let data;
         let usingGroqFallback = false;
+        
+        // Function to call OpenRouter API with 5-key rotation
+        async function callOpenRouterAPI(model, messages, options = {}) {
+            if (OPENROUTER_KEYS.length === 0) {
+                throw new Error('No OpenRouter API keys configured. Please add OPENROUTER_API_KEY1-5 to .env file');
+            }
+            
+            let lastError = null;
+            
+            // Try each API key in rotation until one works
+            for (let attempt = 0; attempt < OPENROUTER_KEYS.length; attempt++) {
+                const apiKey = getNextOpenRouterKey();
+                
+                try {
+                    console.log(`🌐 Cloud: OpenRouter API key ${attempt + 1}/${OPENROUTER_KEYS.length} for ${model} (Always online, FREE)`);
+                    
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json',
+                            'HTTP-Referer': 'https://ajstudioz.dev',
+                            'X-Title': 'AJStudioz AI API'
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: messages,
+                            max_tokens: options.max_tokens || 2000,
+                            temperature: options.temperature || 0.7,
+                            top_p: options.top_p || 0.9
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        console.log(`✅ OpenRouter API success with key ${attempt + 1}`);
+                        return await response.json();
+                    }
+                    
+                    // If rate limited (429), try next key
+                    if (response.status === 429) {
+                        console.log(`⚠️  Rate limit hit on key ${attempt + 1}, trying next key...`);
+                        lastError = new Error(`Rate limit exceeded on API key ${attempt + 1}`);
+                        continue;
+                    }
+                    
+                    // For other errors, still try next key but log the error
+                    const errorData = await response.text();
+                    lastError = new Error(`OpenRouter API error ${response.status}: ${errorData}`);
+                    console.log(`❌ Error with key ${attempt + 1}: ${response.status} - ${errorData}`);
+                    
+                } catch (fetchError) {
+                    lastError = fetchError;
+                    console.log(`❌ Network error with key ${attempt + 1}: ${fetchError.message}`);
+                }
+            }
+            
+            // All keys failed
+            throw new Error(`All ${OPENROUTER_KEYS.length} OpenRouter API keys failed. Last error: ${lastError?.message || 'Unknown error'}`);
+        }
         
         // Function to call Cerebras AI API
         async function callCerebrasAPI(model, messages, options = {}) {
@@ -300,8 +383,32 @@ export default async function handler(req, res) {
             throw new Error(`All ${GROQ_KEYS.length} Groq API keys failed. Last error: ${lastError?.message || 'Unknown error'}`);
         }
         
-        // Use appropriate provider (Ollama local, Groq cloud, Chutes AI cloud, or Cerebras AI cloud)
-        if (modelConfig.provider === 'cerebras') {
+        // Use appropriate provider (Ollama local, Groq cloud, Chutes AI cloud, Cerebras AI cloud, or OpenRouter cloud)
+        if (modelConfig.provider === 'openrouter') {
+            // Use OpenRouter API for free cloud models with 5-key rotation
+            try {
+                console.log(`☁️ Vercel Cloud: ${modelConfig.openrouter} (OpenRouter, ${OPENROUTER_KEYS.length} keys, FREE, always online)`);
+                const openrouterResponse = await callOpenRouterAPI(
+                    modelConfig.openrouter,
+                    messages,
+                    { max_tokens, temperature, top_p }
+                );
+                
+                // Convert OpenRouter response to our format
+                data = {
+                    response: openrouterResponse.choices[0].message.content,
+                    done: true,
+                    eval_count: openrouterResponse.usage?.completion_tokens || 0,
+                    prompt_eval_count: openrouterResponse.usage?.prompt_tokens || 0,
+                    total_duration: 300000000, // 300ms in nanoseconds
+                    eval_duration: 200000000
+                };
+                usingGroqFallback = true;
+            } catch (openrouterError) {
+                console.error('🚨 All OpenRouter API keys failed:', openrouterError.message);
+                throw new Error(`OpenRouter Cloud Error: ${openrouterError.message}`);
+            }
+        } else if (modelConfig.provider === 'cerebras') {
             // Use Cerebras AI API for cloud models
             try {
                 console.log(`☁️ Vercel Cloud: ${modelConfig.cerebras} (Cerebras AI, always online)`);
