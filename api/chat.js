@@ -109,7 +109,10 @@ export default async function handler(req, res) {
             'gpt-oss-120b': { groq: 'openai/gpt-oss-120b', name: 'GPT OSS 120B (24/7)', type: 'advanced', streaming: false, provider: 'groq' },
             
             // Cloud Chutes AI Models (always available 24/7)
-            'glm-4.5-air': { chutes: 'zai-org/GLM-4.5-Air', name: 'GLM-4.5 Air (24/7)', type: 'chat', streaming: false, provider: 'chutes' }
+            'glm-4.5-air': { chutes: 'zai-org/GLM-4.5-Air', name: 'GLM-4.5 Air (24/7)', type: 'chat', streaming: false, provider: 'chutes' },
+            
+            // Cloud Cerebras AI Models (always available 24/7)
+            'zai-glm-4.6': { cerebras: 'zai-glm-4.6', name: 'ZAI GLM-4.6 (24/7)', type: 'reasoning', streaming: true, provider: 'cerebras' }
         };
         
         const modelConfig = modelMap[model];
@@ -149,6 +152,9 @@ export default async function handler(req, res) {
         // Chutes AI API key
         const CHUTES_API_KEY = process.env.CHUTES_API_TOKEN;
         
+        // Cerebras AI API key
+        const CEREBRAS_API_KEY = process.env.CEREBRAS_API_KEY;
+        
         // Simple round-robin key selection
         let currentKeyIndex = 0;
         function getNextGroqKey() {
@@ -160,6 +166,44 @@ export default async function handler(req, res) {
         
         let data;
         let usingGroqFallback = false;
+        
+        // Function to call Cerebras AI API
+        async function callCerebrasAPI(model, messages, options = {}) {
+            if (!CEREBRAS_API_KEY) {
+                throw new Error('No Cerebras API key configured. Please add CEREBRAS_API_KEY to .env file');
+            }
+            
+            try {
+                console.log(`🌐 Cloud: Cerebras AI ${model} (Always online via Vercel)`);
+                
+                const response = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${CEREBRAS_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        max_tokens: options.max_tokens || 40960,
+                        temperature: options.temperature || 0.6,
+                        top_p: options.top_p || 0.95,
+                        stream: false
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`Cerebras API error ${response.status}: ${errorData}`);
+                }
+                
+                console.log(`✅ Cerebras AI API success`);
+                return await response.json();
+                
+            } catch (fetchError) {
+                throw new Error(`Cerebras AI API error: ${fetchError.message}`);
+            }
+        }
         
         // Function to call Chutes AI API
         async function callChutesAPI(model, messages, options = {}) {
@@ -256,8 +300,32 @@ export default async function handler(req, res) {
             throw new Error(`All ${GROQ_KEYS.length} Groq API keys failed. Last error: ${lastError?.message || 'Unknown error'}`);
         }
         
-        // Use appropriate provider (Ollama local, Groq cloud, or Chutes AI cloud)
-        if (modelConfig.provider === 'chutes') {
+        // Use appropriate provider (Ollama local, Groq cloud, Chutes AI cloud, or Cerebras AI cloud)
+        if (modelConfig.provider === 'cerebras') {
+            // Use Cerebras AI API for cloud models
+            try {
+                console.log(`☁️ Vercel Cloud: ${modelConfig.cerebras} (Cerebras AI, always online)`);
+                const cerebrasResponse = await callCerebrasAPI(
+                    modelConfig.cerebras,
+                    messages,
+                    { max_tokens, temperature, top_p }
+                );
+                
+                // Convert Cerebras response to our format
+                data = {
+                    response: cerebrasResponse.choices[0].message.content,
+                    done: true,
+                    eval_count: cerebrasResponse.usage?.completion_tokens || 0,
+                    prompt_eval_count: cerebrasResponse.usage?.prompt_tokens || 0,
+                    total_duration: 300000000, // 300ms in nanoseconds
+                    eval_duration: 200000000
+                };
+                usingGroqFallback = true;
+            } catch (cerebrasError) {
+                console.error('🚨 Cerebras AI API failed:', cerebrasError.message);
+                throw new Error(`Cerebras Cloud Error: ${cerebrasError.message}`);
+            }
+        } else if (modelConfig.provider === 'chutes') {
             // Use Chutes AI API for cloud models
             try {
                 console.log(`☁️ Vercel Cloud: ${modelConfig.chutes} (Chutes AI, always online)`);
