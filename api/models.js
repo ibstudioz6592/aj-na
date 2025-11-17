@@ -52,6 +52,16 @@ const AVAILABLE_MODELS = [
     public_apps: null,
     max_completion_tokens: 65536
   },
+  {
+    id: "glm-4.5-air",
+    object: "model",
+    created: 1699564800,
+    owned_by: "Zhipu AI",
+    active: true,
+    context_window: 131072,
+    public_apps: null,
+    max_completion_tokens: 8192
+  },
   // 🏠 LOCAL MODELS (Privacy Mode - When Ollama Running)
   {
     id: "qwen3-local",

@@ -106,7 +106,10 @@ export default async function handler(req, res) {
             'qwen3': { groq: 'qwen/qwen3-32b', name: 'Qwen 3 32B (24/7)', type: 'reasoning', streaming: false, provider: 'groq' },
             'llama-4': { groq: 'meta-llama/llama-4-maverick-17b-128e-instruct', name: 'Llama 4 Maverick (24/7)', type: 'advanced', streaming: false, provider: 'groq' },
             'gpt-oss': { groq: 'openai/gpt-oss-20b', name: 'GPT OSS 20B (24/7)', type: 'chat', streaming: false, provider: 'groq' },
-            'gpt-oss-120b': { groq: 'openai/gpt-oss-120b', name: 'GPT OSS 120B (24/7)', type: 'advanced', streaming: false, provider: 'groq' }
+            'gpt-oss-120b': { groq: 'openai/gpt-oss-120b', name: 'GPT OSS 120B (24/7)', type: 'advanced', streaming: false, provider: 'groq' },
+            
+            // Cloud Chutes AI Models (always available 24/7)
+            'glm-4.5-air': { chutes: 'zai-org/GLM-4.5-Air', name: 'GLM-4.5 Air (24/7)', type: 'chat', streaming: false, provider: 'chutes' }
         };
         
         const modelConfig = modelMap[model];
@@ -143,6 +146,9 @@ export default async function handler(req, res) {
             process.env.GROQ_API_KEY // Legacy support
         ].filter(key => key && key !== 'your_groq_api_key_here' && key.startsWith('gsk_'));
         
+        // Chutes AI API key
+        const CHUTES_API_KEY = process.env.CHUTES_API_TOKEN;
+        
         // Simple round-robin key selection
         let currentKeyIndex = 0;
         function getNextGroqKey() {
@@ -154,6 +160,43 @@ export default async function handler(req, res) {
         
         let data;
         let usingGroqFallback = false;
+        
+        // Function to call Chutes AI API
+        async function callChutesAPI(model, messages, options = {}) {
+            if (!CHUTES_API_KEY) {
+                throw new Error('No Chutes API token configured. Please add CHUTES_API_TOKEN to .env file');
+            }
+            
+            try {
+                console.log(`🌐 Cloud: Chutes AI ${model} (Always online via Vercel)`);
+                
+                const response = await fetch('https://llm.chutes.ai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${CHUTES_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        max_tokens: options.max_tokens || 1000,
+                        temperature: options.temperature || 0.7,
+                        top_p: options.top_p || 0.9
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`Chutes API error ${response.status}: ${errorData}`);
+                }
+                
+                console.log(`✅ Chutes AI API success`);
+                return await response.json();
+                
+            } catch (fetchError) {
+                throw new Error(`Chutes AI API error: ${fetchError.message}`);
+            }
+        }
         
         // Function to call Groq API with key rotation (independent of Ollama)
         async function callGroqAPI(model, messages, options = {}) {
@@ -213,8 +256,32 @@ export default async function handler(req, res) {
             throw new Error(`All ${GROQ_KEYS.length} Groq API keys failed. Last error: ${lastError?.message || 'Unknown error'}`);
         }
         
-        // Use appropriate provider (Ollama local or Groq cloud)
-        if (modelConfig.provider === 'groq') {
+        // Use appropriate provider (Ollama local, Groq cloud, or Chutes AI cloud)
+        if (modelConfig.provider === 'chutes') {
+            // Use Chutes AI API for cloud models
+            try {
+                console.log(`☁️ Vercel Cloud: ${modelConfig.chutes} (Chutes AI, always online)`);
+                const chutesResponse = await callChutesAPI(
+                    modelConfig.chutes,
+                    messages,
+                    { max_tokens, temperature, top_p }
+                );
+                
+                // Convert Chutes response to our format
+                data = {
+                    response: chutesResponse.choices[0].message.content,
+                    done: true,
+                    eval_count: chutesResponse.usage?.completion_tokens || 0,
+                    prompt_eval_count: chutesResponse.usage?.prompt_tokens || 0,
+                    total_duration: 300000000, // 300ms in nanoseconds
+                    eval_duration: 200000000
+                };
+                usingGroqFallback = true;
+            } catch (chutesError) {
+                console.error('🚨 Chutes AI API failed:', chutesError.message);
+                throw new Error(`Chutes Cloud Error: ${chutesError.message}`);
+            }
+        } else if (modelConfig.provider === 'groq') {
             // Use Groq API for cloud models with multi-key rotation (independent of Ollama)
             try {
                 console.log(`☁️ Vercel Cloud: ${modelConfig.groq} (${GROQ_KEYS.length} keys, always online)`);
