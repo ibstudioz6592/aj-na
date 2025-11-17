@@ -114,11 +114,11 @@ export default async function handler(req, res) {
             // Cloud Cerebras AI Models (always available 24/7)
             'zai-glm-4.6': { cerebras: 'zai-glm-4.6', name: 'ZAI GLM-4.6 (24/7)', type: 'reasoning', streaming: true, provider: 'cerebras' },
             
-            // Cloud OpenRouter Models (always available 24/7 - FREE)
-            'deepseek-r1-qwen3-8b': { openrouter: 'deepseek/deepseek-r1-0528-qwen3-8b:free', name: 'DeepSeek R1 Qwen3 8B (24/7 Free)', type: 'reasoning', streaming: false, provider: 'openrouter' },
-            'qwen3-coder': { openrouter: 'qwen/qwen3-coder:free', name: 'Qwen3 Coder (24/7 Free)', type: 'coding', streaming: false, provider: 'openrouter' },
-            'mistral-small-24b': { openrouter: 'mistralai/mistral-small-24b-instruct-2501:free', name: 'Mistral Small 24B (24/7 Free)', type: 'chat', streaming: false, provider: 'openrouter' },
-            'mistral-small-3.1-24b': { openrouter: 'mistralai/mistral-small-3.1-24b-instruct:free', name: 'Mistral Small 3.1 24B (24/7 Free)', type: 'chat', streaming: false, provider: 'openrouter' }
+            // Cloud OpenRouter Models (via direct providers)
+            'deepseek-r1-qwen3-8b': { openrouter: 'deepseek/deepseek-r1-0528-qwen3-8b:free', name: 'DeepSeek R1 Qwen3 8B', type: 'reasoning', streaming: false, provider: 'openrouter', supportsReasoning: true },
+            'qwen3-coder': { openrouter: 'qwen/qwen3-coder:free', name: 'Qwen3 Coder', type: 'coding', streaming: false, provider: 'openrouter' },
+            'mistral-small-24b': { openrouter: 'mistralai/mistral-small-24b-instruct-2501:free', name: 'Mistral Small 24B', type: 'chat', streaming: false, provider: 'openrouter' },
+            'mistral-small-3.1-24b': { openrouter: 'mistralai/mistral-small-3.1-24b-instruct:free', name: 'Mistral Small 3.1 24B', type: 'chat', streaming: false, provider: 'openrouter' }
         };
         
         const modelConfig = modelMap[model];
@@ -204,7 +204,7 @@ export default async function handler(req, res) {
                 const apiKey = getNextOpenRouterKey();
                 
                 try {
-                    console.log(`🌐 Cloud: OpenRouter API key ${attempt + 1}/${OPENROUTER_KEYS.length} for ${model} (Always online, FREE)`);
+                    console.log(`🌐 Cloud: OpenRouter API key ${attempt + 1}/${OPENROUTER_KEYS.length} for ${model}`);
                     
                     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                         method: 'POST',
@@ -387,16 +387,31 @@ export default async function handler(req, res) {
         if (modelConfig.provider === 'openrouter') {
             // Use OpenRouter API for free cloud models with 5-key rotation
             try {
-                console.log(`☁️ Vercel Cloud: ${modelConfig.openrouter} (OpenRouter, ${OPENROUTER_KEYS.length} keys, FREE, always online)`);
+                console.log(`☁️ Vercel Cloud: ${modelConfig.openrouter} (OpenRouter, ${OPENROUTER_KEYS.length} keys)`);
                 const openrouterResponse = await callOpenRouterAPI(
                     modelConfig.openrouter,
                     messages,
                     { max_tokens, temperature, top_p }
                 );
                 
+                // Extract reasoning content for reasoning models (like DeepSeek R1)
+                let responseContent = openrouterResponse.choices[0].message.content;
+                let thinkingContent = '';
+                
+                // Check if model supports reasoning and content has thinking tags
+                if (modelConfig.supportsReasoning && responseContent.includes('<think>')) {
+                    const thinkMatch = responseContent.match(/<think>([\s\S]*?)<\/think>/i);
+                    if (thinkMatch) {
+                        thinkingContent = thinkMatch[1].trim();
+                        // Remove thinking tags from response
+                        responseContent = responseContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+                    }
+                }
+                
                 // Convert OpenRouter response to our format
                 data = {
-                    response: openrouterResponse.choices[0].message.content,
+                    response: responseContent,
+                    thinking: thinkingContent,
                     done: true,
                     eval_count: openrouterResponse.usage?.completion_tokens || 0,
                     prompt_eval_count: openrouterResponse.usage?.prompt_tokens || 0,
@@ -690,8 +705,8 @@ export default async function handler(req, res) {
         let finalResponse = data.response || '';
         let reasoningContent = data.thinking || '';
         
-        // For GLM-4.6 and other reasoning models, extract the actual response
-        if (model.includes('glm-4.6') && reasoningContent && (!finalResponse || finalResponse === 'No response from model')) {
+        // For reasoning models (GLM-4.6, DeepSeek R1), extract the actual response
+        if ((model.includes('glm-4.6') || model.includes('deepseek-r1')) && reasoningContent && (!finalResponse || finalResponse === 'No response from model')) {
             // Try to extract the final answer from the reasoning content
             const responseMatch = reasoningContent.match(/(?:I should respond|I'll respond|My response|Final response|I'll say):?\s*["\"]?(.*?)["\""]?(?:\n|$)/i);
             if (responseMatch) {
