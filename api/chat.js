@@ -1,6 +1,6 @@
 // Neon database for API key validation
 import { neon } from '@neondatabase/serverless';
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 // Demo keys for backward compatibility
 const API_KEYS = new Map([
