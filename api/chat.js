@@ -88,7 +88,7 @@ export default async function handler(req, res) {
     }
 
     const requestId = generateRequestId();
-    const user = authenticateRequest(req);
+    const user = await authenticateRequest(req);
     
     if (!user) {
         return res.status(401).json({
@@ -827,6 +827,7 @@ export default async function handler(req, res) {
             metadata: {
                 request_id: req.requestId,
                 user_id: req.user.id,
+                user_email: req.user.email,
                 model_provider: modelConfig.provider,
                 model_config: modelConfig.name,
                 response_time_ms: duration,
@@ -862,6 +863,33 @@ export default async function handler(req, res) {
             top_logprobs: null,
             max_tool_calls: null
         };
+        
+        // Log request to Neon database
+        if (process.env.DATABASE_URL && req.user.id && !req.user.id.startsWith('demo-') && !req.user.id.startsWith('test-')) {
+            try {
+                const sql = neon(process.env.DATABASE_URL);
+                const cost = (totalTokens / 1000000) * 0.5; // $0.50 per 1M tokens
+                
+                await sql`
+                    INSERT INTO request_history (
+                        user_id, model, endpoint, method, status_code,
+                        response_time, total_tokens, cost
+                    ) VALUES (
+                        ${req.user.id},
+                        ${model},
+                        '/api/chat',
+                        'POST',
+                        200,
+                        ${duration},
+                        ${totalTokens},
+                        ${cost}
+                    )
+                `;
+            } catch (dbError) {
+                console.error('Failed to log request to database:', dbError);
+                // Don't fail the request if logging fails
+            }
+        }
         
         return res.status(200).json(structuredResponse);
         
