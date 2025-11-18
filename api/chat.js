@@ -1,4 +1,8 @@
-// Inline implementations for Vercel compatibility - AJStudioz API Keys
+// Neon database for API key validation
+import { neon } from '@neondatabase/serverless';
+const crypto = require('crypto');
+
+// Demo keys for backward compatibility
 const API_KEYS = new Map([
   ['ak-demo123456789', { id: 'demo-user', email: 'demo@ajstudioz.dev', plan: 'pro', usage: { requests_this_month: 0, tokens_this_month: 0 } }],
   ['ak-test123456789', { id: 'test-user', email: 'test@ajstudioz.dev', plan: 'free', usage: { requests_this_month: 0, tokens_this_month: 0 } }],
@@ -6,10 +10,47 @@ const API_KEYS = new Map([
   ['aj-test987654321fedcba', { id: 'test-user-v2', email: 'test@ajstudioz.dev', plan: 'pro', usage: { requests_this_month: 0, tokens_this_month: 0 } }]
 ]);
 
-function authenticateRequest(req) {
+async function authenticateRequest(req) {
   const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
   if (!apiKey) return null;
-  return API_KEYS.get(apiKey);
+  
+  // Check demo keys first
+  if (API_KEYS.has(apiKey)) {
+    return API_KEYS.get(apiKey);
+  }
+  
+  // Check Neon database for real keys (nxq_ prefix)
+  if (apiKey.startsWith('nxq_') && process.env.DATABASE_URL) {
+    try {
+      const sql = neon(process.env.DATABASE_URL);
+      const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+      
+      const result = await sql`
+        SELECT k.id, k.user_id, k.is_active, u.email
+        FROM api_keys k
+        JOIN users u ON k.user_id = u.id
+        WHERE k.key_hash = ${keyHash} AND k.is_active = true
+        LIMIT 1
+      `;
+      
+      if (result && result.length > 0) {
+        const key = result[0];
+        // Update last_used_at
+        await sql`UPDATE api_keys SET last_used_at = NOW() WHERE id = ${key.id}`;
+        
+        return {
+          id: key.user_id,
+          email: key.email,
+          plan: 'pro',
+          usage: { requests_this_month: 0, tokens_this_month: 0 }
+        };
+      }
+    } catch (error) {
+      console.error('Database auth error:', error);
+    }
+  }
+  
+  return null;
 }
 
 function generateRequestId() {
