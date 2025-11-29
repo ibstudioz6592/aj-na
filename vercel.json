@@ -3,7 +3,12 @@
   "name": "ajstudioz-ai-api",
   "functions": {
     "api/*.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "proxy-server.js": {
+      "maxDuration": 30,
+      "memory": 1024
     }
   },
   "rewrites": [
@@ -12,11 +17,49 @@
       "destination": "/api/$1"
     },
     {
+      "source": "/v1/(.*)",
+      "destination": "/api/v1/$1"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/health"
+    },
+    {
       "source": "/(.*)",
       "destination": "/public/$1"
     }
   ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://nexariq-07.vercel.app"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-API-Key"
+        }
+      ]
+    }
+  ],
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "regions": ["iad1"],
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
+  ]
 }
