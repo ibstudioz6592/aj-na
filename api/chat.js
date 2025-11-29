@@ -23,13 +23,12 @@ async function authenticateRequest(req) {
   if (apiKey.startsWith('nxq_') && process.env.DATABASE_URL) {
     try {
       const sql = neon(process.env.DATABASE_URL);
-      const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
       
       const result = await sql`
-        SELECT k.id, k.user_id, k.is_active, u.email
+        SELECT k.id, k."userId" as user_id, k."isActive" as is_active, u.email
         FROM api_keys k
-        JOIN users u ON k.user_id = u.id
-        WHERE k.key_hash = ${keyHash} AND k.is_active = true
+        JOIN users u ON k."userId" = u.id
+        WHERE k.key = ${apiKey} AND k."isActive" = true
         LIMIT 1
       `;
       
