@@ -137,6 +137,12 @@ export default async function handler(req, res) {
         
         // Model mapping - Simple local + cloud setup
         const modelMap = {
+            // GitHub Models API (FREE unlimited for students - PREMIUM!)
+            'gpt-4o': { github: 'gpt-4o', name: 'GPT-4o (GitHub Student FREE)', type: 'advanced', streaming: false, provider: 'github' },
+            'gpt-4o-mini': { github: 'gpt-4o-mini', name: 'GPT-4o Mini (GitHub Student FREE)', type: 'chat', streaming: false, provider: 'github' },
+            'claude-3-5-haiku': { github: 'claude-3-5-haiku', name: 'Claude 3.5 Haiku (GitHub Student FREE)', type: 'chat', streaming: false, provider: 'github' },
+            'llama-3-1-8b': { github: 'llama-3.1-8b-instruct', name: 'Llama 3.1 8B (GitHub Student FREE)', type: 'chat', streaming: false, provider: 'github' },
+            
             // Local Ollama Models (require Ollama running)
             'qwen3-local': { ollama: 'qwen3:1.7b', name: 'Qwen 3:1.7B (Local)', type: 'chat', streaming: true, provider: 'ollama' },
             'glm-4.6': { ollama: 'glm-4.6:cloud', name: 'GLM-4.6:Cloud (Local)', type: 'reasoning', streaming: true, provider: 'ollama' },
@@ -209,6 +215,9 @@ export default async function handler(req, res) {
             process.env.OPENROUTER_API_KEY4,
             process.env.OPENROUTER_API_KEY5
         ].filter(key => key && key !== 'your_openrouter_api_key_here');
+        
+        // GitHub Models API (FREE for students!)
+        const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
         
         // Simple round-robin key selection
         let currentKeyIndex = 0;
@@ -365,6 +374,44 @@ export default async function handler(req, res) {
             }
         }
         
+        // Function to call GitHub Models API (FREE for students!)
+        async function callGitHubModelsAPI(model, messages, options = {}) {
+            if (!GITHUB_TOKEN) {
+                throw new Error('No GitHub token configured. Please add GITHUB_TOKEN to .env file');
+            }
+            
+            try {
+                console.log(`🎓 GitHub Models: ${model} (FREE unlimited for students!)`);
+                
+                const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        max_tokens: options.max_tokens || 2000,
+                        temperature: options.temperature || 0.7,
+                        top_p: options.top_p || 0.9,
+                        stream: false
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`GitHub Models API error ${response.status}: ${errorData}`);
+                }
+                
+                console.log(`✅ GitHub Models API success`);
+                return await response.json();
+                
+            } catch (fetchError) {
+                throw new Error(`GitHub Models API error: ${fetchError.message}`);
+            }
+        }
+
         // Function to call Groq API with key rotation (independent of Ollama)
         async function callGroqAPI(model, messages, options = {}) {
             if (GROQ_KEYS.length === 0) {
@@ -423,8 +470,32 @@ export default async function handler(req, res) {
             throw new Error(`All ${GROQ_KEYS.length} Groq API keys failed. Last error: ${lastError?.message || 'Unknown error'}`);
         }
         
-        // Use appropriate provider (Ollama local, Groq cloud, Chutes AI cloud, Cerebras AI cloud, or OpenRouter cloud)
-        if (modelConfig.provider === 'openrouter') {
+        // Use appropriate provider (GitHub Models, Ollama local, Groq cloud, Chutes AI cloud, Cerebras AI cloud, or OpenRouter cloud)
+        if (modelConfig.provider === 'github') {
+            // Use GitHub Models API for FREE student access
+            try {
+                console.log(`🎓 GitHub Student FREE: ${modelConfig.github} (Unlimited access)`);
+                const githubResponse = await callGitHubModelsAPI(
+                    modelConfig.github,
+                    messages,
+                    { max_tokens, temperature, top_p }
+                );
+                
+                // Convert GitHub Models response to our format
+                data = {
+                    response: githubResponse.choices[0].message.content,
+                    done: true,
+                    eval_count: githubResponse.usage?.completion_tokens || 0,
+                    prompt_eval_count: githubResponse.usage?.prompt_tokens || 0,
+                    total_duration: 200000000, // 200ms in nanoseconds (very fast)
+                    eval_duration: 150000000
+                };
+                usingGroqFallback = true;
+            } catch (githubError) {
+                console.error('🚨 GitHub Models API failed:', githubError.message);
+                throw new Error(`GitHub Models Error: ${githubError.message}`);
+            }
+        } else if (modelConfig.provider === 'openrouter') {
             // Use OpenRouter API for free cloud models with 5-key rotation
             try {
                 console.log(`☁️ Vercel Cloud: ${modelConfig.openrouter} (OpenRouter, ${OPENROUTER_KEYS.length} keys)`);

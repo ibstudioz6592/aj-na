@@ -31,6 +31,18 @@ TEST_API.ps1
 
 ## 🌐 Your API Endpoints
 
+### GitHub Models (FREE for Students - BEST!)
+```bash
+curl -X POST "https://api.ajstudioz.dev/api/chat" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: aj-demo123456789abcdef" \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [{"role": "user", "content": "Hello from GitHub Models!"}],
+    "stream": false
+  }'
+```
+
 ### Cloud Models (24/7 - Recommended)
 ```bash
 curl -X POST "https://api.ajstudioz.dev/api/chat" \
@@ -56,6 +68,14 @@ curl -X POST "https://local-api.ajstudioz.dev/api/chat" \
 ```
 
 ## 🤖 Available Models
+
+### 🎓 GitHub Models (FREE Unlimited for Students!)
+| Model | Provider | Best For | Status |
+|-------|----------|----------|--------|
+| `gpt-4o` | OpenAI (GitHub) | Premium GPT-4 Omni - most advanced | 🎓 FREE |
+| `gpt-4o-mini` | OpenAI (GitHub) | Fast & efficient GPT-4 | 🎓 FREE |
+| `claude-3-5-haiku` | Anthropic (GitHub) | Claude 3.5 Haiku reasoning | 🎓 FREE |
+| `llama-3-1-8b` | Meta (GitHub) | Llama 3.1 8B Instruct | 🎓 FREE |
 
 ### ☁️ Cloud Models (Always Online 24/7 via Vercel)
 | Model | Provider | Best For | Status |
@@ -174,6 +194,21 @@ Since you deleted the domain from Vercel, the DNS record in Cloudflare Dashboard
 - CORS enabled for web applications
 
 ## 📱 Example Usage
+
+### PowerShell (GitHub Models - FREE!)
+```powershell
+$headers = @{
+    "Content-Type" = "application/json"
+    "X-API-Key" = "aj-demo123456789abcdef"
+}
+
+$body = @{
+    model = "gpt-4o-mini"
+    messages = @(@{ role = "user"; content = "Hello from GitHub Models FREE!" })
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "https://api.ajstudioz.dev/api/chat" -Method POST -Headers $headers -Body $body
+```
 
 ### PowerShell (Vercel Cloud)
 ```powershell
