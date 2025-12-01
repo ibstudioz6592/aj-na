@@ -137,11 +137,17 @@ export default async function handler(req, res) {
         
         // Model mapping - Simple local + cloud setup
         const modelMap = {
-            // GitHub Models API (FREE unlimited for students - PREMIUM!)
+            // GitHub Models API (FREE for students with Copilot Free!)
             'gpt-4o': { github: 'gpt-4o', name: 'GPT-4o (GitHub Student FREE)', type: 'advanced', streaming: false, provider: 'github' },
             'gpt-4o-mini': { github: 'gpt-4o-mini', name: 'GPT-4o Mini (GitHub Student FREE)', type: 'chat', streaming: false, provider: 'github' },
-            'claude-3-5-haiku': { github: 'claude-3-5-haiku', name: 'Claude 3.5 Haiku (GitHub Student FREE)', type: 'chat', streaming: false, provider: 'github' },
-            'llama-3-1-8b': { github: 'llama-3.1-8b-instruct', name: 'Llama 3.1 8B (GitHub Student FREE)', type: 'chat', streaming: false, provider: 'github' },
+            
+            // Premium Reasoning Models (GitHub Student FREE!)
+            'deepseek-r1': { github: 'deepseek-r1', name: 'DeepSeek R1 Reasoning (GitHub Student FREE)', type: 'reasoning', streaming: false, provider: 'github', supportsReasoning: true },
+            'deepseek-r1-0528': { github: 'deepseek-r1-0528', name: 'DeepSeek R1 Stable (GitHub Student FREE)', type: 'reasoning', streaming: false, provider: 'github', supportsReasoning: true },
+            'grok-3': { github: 'grok-3', name: 'Grok 3 by xAI (GitHub Student FREE)', type: 'advanced', streaming: false, provider: 'github' },
+            'grok-3-mini': { github: 'grok-3-mini', name: 'Grok 3 Mini (GitHub Student FREE)', type: 'chat', streaming: false, provider: 'github' },
+            'phi-4': { github: 'phi-4', name: 'Microsoft Phi-4 (GitHub Student FREE)', type: 'chat', streaming: false, provider: 'github' },
+            'mistral-nemo': { github: 'mistral-nemo', name: 'Mistral Nemo (GitHub Student FREE)', type: 'chat', streaming: false, provider: 'github' },
             
             // Local Ollama Models (require Ollama running)
             'qwen3-local': { ollama: 'qwen3:1.7b', name: 'Qwen 3:1.7B (Local)', type: 'chat', streaming: true, provider: 'ollama' },
